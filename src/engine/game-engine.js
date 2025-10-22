@@ -71,7 +71,6 @@ export function createBattle({ west, east, config, renderer, overlay }) {
 
   function runTurn() {
     resolveTurn(state);
-    recorder.record(state);
     renderer.render(state);
     overlay.update(state);
     if (state.status.finished) {
