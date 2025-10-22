@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>タワーディフェンス対戦</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main id="app">
+    <section id="battle-container">
+      <canvas id="battle-canvas" width="1280" height="576"></canvas>
+    </section>
+
+    <section id="controls">
+      <div class="control-row">
+        <div class="timeline">
+          <span>ターン: <strong id="turn-label">0</strong></span>
+          <span>経過時間: <strong id="time-elapsed">00:00</strong></span>
+          <span>残り時間: <strong id="time-remaining">--:--</strong></span>
+        </div>
+        <div class="buttons">
+          <button id="btn-play" title="再生">▶</button>
+          <button id="btn-pause" title="一時停止">⏸</button>
+          <button id="btn-step" title="1ステップ進める">⏭</button>
+          <label>速度:
+            <select id="speed-select">
+              <option value="0.5">0.5x</option>
+              <option value="1" selected>1x</option>
+              <option value="2">2x</option>
+            </select>
+          </label>
+          <button id="btn-start">戦闘開始</button>
+        </div>
+      </div>
+
+      <div class="control-row replay-row">
+        <label>リプレイ:
+          <input id="replay-file" type="file" accept="application/json" />
+        </label>
+        <button id="btn-load-replay">読み込み</button>
+        <button id="btn-download-replay">保存</button>
+      </div>
+    </section>
+
+    <section id="panels">
+      <aside id="unit-panel">
+        <h2>ユニット情報</h2>
+        <div class="unit-info">
+          <p>ユニットをクリックすると詳細が表示されます。</p>
+        </div>
+        <div id="unit-details"></div>
+      </aside>
+
+      <section id="log-panel">
+        <h2>イベントログ</h2>
+        <div id="log-list"></div>
+      </section>
+    </section>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
