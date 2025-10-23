@@ -36,6 +36,8 @@ export function createInitialState({ west, east, config, sandbox }) {
     map: JSON.parse(JSON.stringify(MAP_DATA)),
     units,
     log: [],
+    effects: [],
+    effectSeq: 0,
     status: { finished: false, winner: null }
   };
 }

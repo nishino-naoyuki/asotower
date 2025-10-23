@@ -1,9 +1,10 @@
-import { createInitialState, cloneState } from "./state.js";
-import { resolveTurn } from "./actions.js";
+import { createInitialState } from "./state.js";
+import { resolveTurn } from "./actions.js?v=202510231431";
 import { Renderer } from "../render/renderer.js";
 import { ReplayRecorder } from "../render/replay-recorder.js";
 import { Sandbox } from "../sdk/sandbox.js";
 import { loadConfig } from "../sdk/api.js";
+import { audioManager } from "../render/audio-manager.js?v=202510231450";
 
 export async function loadTeams() {
   const config = await loadConfig();
@@ -39,6 +40,8 @@ export function createBattle({ west, east, config, renderer, overlay }) {
   const state = createInitialState({ west, east, config, sandbox });
   const turnIntervalMs = config.turnIntervalMs ?? 5000;
   let timerId = null;
+  let effectFrame = null;
+  let fanfarePlayed = false;
 
   const loop = {
     running: false,
@@ -82,11 +85,17 @@ export function createBattle({ west, east, config, renderer, overlay }) {
   function runTurn() {
     console.log("runTurn state:", state);
     resolveTurn(state);
+    playPendingEffectAudio();
     renderer.render(state);
     overlay.update(state);
+    ensureEffectLoop();
     if (state.status.finished) {
       loop.running = false;
       clearTimer();
+      if (!fanfarePlayed) {
+        audioManager.playBgmKey("fanfare");
+        fanfarePlayed = true;
+      }
       overlay.showMessage(`試合終了: ${state.status.winner} 勝利`);
     }
   }
@@ -110,6 +119,57 @@ export function createBattle({ west, east, config, renderer, overlay }) {
         scheduleNextTurn();
       }
     }, baseDelay);
+  }
+
+  function playPendingEffectAudio() {
+    const effects = state.effects ?? [];
+    effects.forEach((effect) => {
+      if (effect.played) return;
+      if (effect.sound) {
+        audioManager.playSfxKey(effect.sound);
+      }
+      if (Array.isArray(effect.jobSounds)) {
+        effect.jobSounds.forEach(({ job, kind }) => {
+          audioManager.playJobSfx(job, kind);
+        });
+      }
+      effect.played = true;
+    });
+  }
+
+  function ensureEffectLoop() {
+    if (!state.effects?.length) {
+      if (effectFrame !== null) {
+        cancelAnimationFrame(effectFrame);
+        effectFrame = null;
+        renderer.render(state);
+      }
+      return;
+    }
+
+    if (effectFrame !== null) return;
+
+    const step = () => {
+      const now = Date.now();
+      const active = (state.effects ?? []).filter((effect) => {
+        const life = effect.durationMs ?? 600;
+        return now - effect.createdAt < life;
+      });
+
+      if (active.length !== (state.effects?.length ?? 0)) {
+        state.effects = active;
+      }
+
+      renderer.render(state);
+
+      if (active.length > 0) {
+        effectFrame = requestAnimationFrame(step);
+      } else {
+        effectFrame = null;
+      }
+    };
+
+    effectFrame = requestAnimationFrame(step);
   }
 
   renderer.render(state);

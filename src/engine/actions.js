@@ -1,6 +1,7 @@
-import { movementPerTurn, computeDamage, isInRange, rangePerTurn } from "./rules.js?v=202510230936";
+import { movementPerTurn, computeDamage, isInRange, rangePerTurn } from "./rules.js";
 
 export function resolveTurn(state) {
+  pruneExpiredEffects(state);
   const ordered = [...state.units].sort((a, b) => {
     const speedDiff = b.stats.speed - a.stats.speed;
     return speedDiff !== 0 ? speedDiff : a.slot - b.slot;
@@ -123,6 +124,20 @@ function handleMove(state, unit, command) {
   };
 
   const adjusted = adjustForWalls(state.map, unit.position, target);
+  const currentCell = {
+    x: Math.floor(unit.position.x),
+    y: Math.floor(unit.position.y)
+  };
+  const targetCell = {
+    x: Math.floor(adjusted.x),
+    y: Math.floor(adjusted.y)
+  };
+  const enteringNewCell = currentCell.x !== targetCell.x || currentCell.y !== targetCell.y;
+
+  if (enteringNewCell && isOccupiedCell(state, adjusted, unit)) {
+    state.log.push({ turn: state.turn, message: `${unit.id} は混雑して進めなかった` });
+    return;
+  }
   unit.position.x = adjusted.x;
   unit.position.y = adjusted.y;
 
@@ -158,6 +173,15 @@ function isWallCell(walls, point) {
   return walls.some((wall) => wall.x === cellX && wall.y === cellY);
 }
 
+function isOccupiedCell(state, position, self) {
+  const cellX = Math.floor(position.x);
+  const cellY = Math.floor(position.y);
+  return state.units.some((unit) => {
+    if (unit === self || unit.hp <= 0) return false;
+    return Math.floor(unit.position.x) === cellX && Math.floor(unit.position.y) === cellY;
+  });
+}
+
 function handleAttack(state, unit, command) {
   const target = state.units.find((u) => u.id === command.targetId);
   if (!target || target.hp <= 0) return;
@@ -170,6 +194,28 @@ function handleAttack(state, unit, command) {
   const damage = computeDamage(unit, target);
   target.hp = Math.max(0, target.hp - damage);
   state.log.push({ turn: state.turn, message: `${unit.id} が ${target.id} に ${damage} ダメージ` });
+  const jobSounds = [];
+  if (damage > 0 && target.job) {
+    jobSounds.push({ job: target.job, kind: "hit" });
+    if (target.hp <= 0) {
+      jobSounds.push({ job: target.job, kind: "down" });
+    }
+  }
+  queueEffect(state, {
+    kind: "attack",
+    position: target.position,
+    sound: "attack",
+    jobSounds,
+    source: unit.position,
+    target: target.position,
+    variant: distanceBetween(unit.position, target.position) <= 1.5 ? "melee" : "ranged"
+  });
+
+  queueEffect(state, {
+    kind: "impactRing",
+    position: target.position,
+    durationMs: 500
+  });
 }
 
 function handleAttackCastle(state, unit) {
@@ -190,6 +236,14 @@ function handleAttackCastle(state, unit) {
   const damage = Math.max(1, computeDamage(unit, dummyCastle));
   castles[hpKey] = Math.max(0, (castles[hpKey] ?? 0) - damage);
   state.log.push({ turn: state.turn, message: `${unit.id} が敵城に ${damage} ダメージ` });
+  queueEffect(state, {
+    kind: "attack",
+    position: castlePos,
+    sound: "attack",
+    source: unit.position,
+    target: castlePos,
+    variant: "siege"
+  });
 
   if (castles[hpKey] <= 0) {
     state.log.push({ turn: state.turn, message: `${enemySide === "west" ? "西軍" : "東軍"}の城が陥落した` });
@@ -203,6 +257,12 @@ function handleSkill(state, unit) {
   }
   unit.skill.used = true;
   state.log.push({ turn: state.turn, message: `${unit.id} がスキルを使用` });
+  queueEffect(state, {
+    kind: "skill",
+    position: unit.position,
+    durationMs: 900,
+    sound: "skill"
+  });
 }
 
 function checkEndCondition(state) {
@@ -216,4 +276,45 @@ function checkEndCondition(state) {
       state.status.winner = westCastle <= 0 ? "東軍" : "西軍";
     }
   }
+}
+
+function pruneExpiredEffects(state) {
+  const now = Date.now();
+  state.effects = (state.effects ?? []).filter((effect) => now - effect.createdAt < effect.durationMs);
+}
+
+function queueEffect(state, { kind, position, durationMs = 600, sound = null, jobSounds = [], source = null, target = null, variant = null }) {
+  const now = Date.now();
+  const id = (state.effectSeq = (state.effectSeq ?? 0) + 1);
+  if (!state.effects) state.effects = [];
+  const normalizedJobSounds = normalizeJobSounds(jobSounds);
+  state.effects.push({
+    id,
+    kind,
+    position: { x: position.x, y: position.y },
+    createdAt: now,
+    durationMs,
+    sound,
+    ...(normalizedJobSounds.length ? { jobSounds: normalizedJobSounds } : {}),
+    ...(source ? { source: { x: source.x, y: source.y } } : {}),
+    ...(target ? { target: { x: target.x, y: target.y } } : {}),
+    ...(variant ? { variant } : {}),
+    played: false
+  });
+}
+
+function normalizeJobSounds(list) {
+  if (!Array.isArray(list) || list.length === 0) return [];
+  return list
+    .map((entry) => {
+      if (!entry || !entry.job || !entry.kind) return null;
+      return { job: entry.job, kind: entry.kind };
+    })
+    .filter(Boolean);
+}
+
+function distanceBetween(a, b) {
+  const dx = (a?.x ?? 0) - (b?.x ?? 0);
+  const dy = (a?.y ?? 0) - (b?.y ?? 0);
+  return Math.hypot(dx, dy);
 }

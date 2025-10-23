@@ -1,0 +1,57 @@
+{
+  "bgm": {
+    "main": "bgm/main_theme.mp3",
+    "fanfare": {
+      "path": "bgm/fanfare_victory.mp3",
+      "loop": false
+    }
+  },
+  "sfx": {
+    "attack": "sfx/impact.mp3",
+    "skill": "sfx/skill_flash.mp3",
+    "hit_default": "sfx/hit_default.mp3",
+    "down_default": "sfx/down_default.mp3"
+  },
+  "jobs": {
+    "soldier": {
+      "hit": "jobs/soldier_hit.mp3",
+      "down": "jobs/soldier_down.mp3"
+    },
+    "guardian": {
+      "hit": "jobs/guardian_hit.mp3",
+      "down": "jobs/guardian_down.mp3"
+    },
+    "archer": {
+      "hit": "jobs/archer_hit.mp3",
+      "down": "jobs/archer_down.mp3"
+    },
+    "mage": {
+      "hit": "jobs/mage_hit.mp3",
+      "down": "jobs/mage_down.mp3"
+    },
+    "healer": {
+      "hit": "jobs/healer_hit.mp3",
+      "down": "jobs/healer_down.mp3"
+    },
+    "assassin": {
+      "hit": "jobs/assassin_hit.mp3",
+      "down": "jobs/assassin_down.mp3"
+    },
+    "engineer": {
+      "hit": "jobs/engineer_hit.mp3",
+      "down": "jobs/engineer_down.mp3"
+    },
+    "summoner": {
+      "hit": "jobs/summoner_hit.mp3",
+      "down": "jobs/summoner_down.mp3"
+    },
+    "scout": {
+      "hit": "jobs/scout_hit.mp3",
+      "down": "jobs/scout_down.mp3"
+    },
+    "lancer": {
+      "hit": "jobs/lancer_hit.mp3",
+      "down": "jobs/lancer_down.mp3"
+    }
+  }
+}

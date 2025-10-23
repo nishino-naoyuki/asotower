@@ -1,8 +1,8 @@
-import { loadTeams, createBattle } from "./engine/game-engine.js?v=202510231119";
-import { Renderer } from "./render/renderer.js?v=202510231131";
+import { loadTeams, createBattle } from "./engine/game-engine.js?v=202510231710";
+import { Renderer } from "./render/renderer.js?v=202510241810";
 import { Overlay } from "./render/ui-overlay.js?v=202510230936";
 import { Controls } from "./render/controls.js?v=202510230936";
-import { audioManager } from "./render/audio-manager.js?v=202510230936";
+import { audioManager } from "./render/audio-manager.js?v=202510241705";
 import { validateTeams } from "./sdk/validator.js?v=202510230936";
 
 const canvas = document.getElementById("battle-canvas");
@@ -26,7 +26,7 @@ async function startBattle() {
   }
 
   battle = createBattle({ west, east, config, renderer, overlay });
-  audioManager.playBgm("assets/audio/bgm/main_theme.mp3");
+  audioManager.playBgmKey("main");
   battle.start();
   overlay.showMessage("試合開始！！");
 }

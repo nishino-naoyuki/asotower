@@ -14,15 +14,15 @@
     { "slot": 10, "file": "unit10.js", "job": "scout", "initialPosition": { "x": 7, "y": 11 } }
   ],
   "east": [
-    { "slot": 1, "file": "enemy01.js", "job": "guardian", "initialPosition": { "x": 35, "y": 6 } },
-    { "slot": 2, "file": "enemy02.js", "job": "soldier", "initialPosition": { "x": 33, "y": 7 } },
-    { "slot": 3, "file": "enemy03.js", "job": "archer", "initialPosition": { "x": 31, "y": 5 } },
-    { "slot": 4, "file": "enemy04.js", "job": "mage", "initialPosition": { "x": 29, "y": 10 } },
-    { "slot": 5, "file": "enemy05.js", "job": "healer", "initialPosition": { "x": 27, "y": 4 } },
-    { "slot": 6, "file": "enemy06.js", "job": "assassin", "initialPosition": { "x": 25, "y": 9 } },
-    { "slot": 7, "file": "enemy07.js", "job": "engineer", "initialPosition": { "x": 36, "y": 8 } },
-    { "slot": 8, "file": "enemy08.js", "job": "lancer", "initialPosition": { "x": 32, "y": 6 } },
-    { "slot": 9, "file": "enemy09.js", "job": "summoner", "initialPosition": { "x": 28, "y": 11 } },
-    { "slot": 10, "file": "enemy10.js", "job": "scout", "initialPosition": { "x": 34, "y": 12 } }
+    { "slot": 1, "file": "unit01.js", "job": "guardian", "initialPosition": { "x": 35, "y": 6 } },
+    { "slot": 2, "file": "unit02.js", "job": "soldier", "initialPosition": { "x": 33, "y": 7 } },
+    { "slot": 3, "file": "unit03.js", "job": "archer", "initialPosition": { "x": 31, "y": 5 } },
+    { "slot": 4, "file": "unit04.js", "job": "mage", "initialPosition": { "x": 29, "y": 10 } },
+    { "slot": 5, "file": "unit05.js", "job": "healer", "initialPosition": { "x": 27, "y": 4 } },
+    { "slot": 6, "file": "unit06.js", "job": "assassin", "initialPosition": { "x": 25, "y": 9 } },
+    { "slot": 7, "file": "unit07.js", "job": "engineer", "initialPosition": { "x": 36, "y": 8 } },
+    { "slot": 8, "file": "unit08.js", "job": "lancer", "initialPosition": { "x": 32, "y": 6 } },
+    { "slot": 9, "file": "unit09.js", "job": "summoner", "initialPosition": { "x": 28, "y": 11 } },
+    { "slot": 10, "file": "unit10.js", "job": "scout", "initialPosition": { "x": 34, "y": 12 } }
   ]
 }
