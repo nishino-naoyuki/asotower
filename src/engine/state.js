@@ -1,5 +1,5 @@
-import { JOB_DATA } from "../data/jobs.js";
-import { MAP_DATA } from "../data/map.js";
+import { JOB_DATA } from "../data/jobs.js?v=202510230936";
+import { MAP_DATA } from "../data/map.js?v=202510230936";
 
 export function createInitialState({ west, east, config, sandbox }) {
   const units = [];

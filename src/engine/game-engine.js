@@ -18,6 +18,7 @@ async function loadSide(side, config) {
   const team = [];
   for (const slot of config[side]) {
     const moduleUrl = new URL(`../teams/${side}/${slot.file}`, import.meta.url);
+    moduleUrl.searchParams.set("v", Date.now().toString());
     const mod = await Sandbox.importModule(moduleUrl.href);
     team.push({
       slot: slot.slot,
@@ -36,30 +37,39 @@ export function createBattle({ west, east, config, renderer, overlay }) {
   const recorder = new ReplayRecorder();
 
   const state = createInitialState({ west, east, config, sandbox });
+  const turnIntervalMs = config.turnIntervalMs ?? 5000;
+  let timerId = null;
 
   const loop = {
     running: false,
     speed: 1,
+    interval: turnIntervalMs,
     selectUnit(id) {
       renderer.focusUnit(id);
       overlay.updateSelection(id, state);
     },
     play() {
+      if (this.running) return;
       this.running = true;
+      scheduleNextTurn();
     },
     pause() {
+      if (!this.running) return;
       this.running = false;
+      clearTimer();
     },
     step() {
-      this.running = false;
+      this.pause();
       runTurn();
     },
     setSpeed(speed) {
-      this.speed = speed;
+      this.speed = Math.max(0.1, speed);
+      if (this.running) {
+        scheduleNextTurn();
+      }
     },
     start() {
-      this.running = true;
-      frame();
+      this.play();
     },
     exportReplay() {
       recorder.download();
@@ -70,24 +80,36 @@ export function createBattle({ west, east, config, renderer, overlay }) {
   };
 
   function runTurn() {
+    console.log("runTurn state:", state);
     resolveTurn(state);
     renderer.render(state);
     overlay.update(state);
     if (state.status.finished) {
       loop.running = false;
+      clearTimer();
       overlay.showMessage(`試合終了: ${state.status.winner} 勝利`);
     }
   }
 
-  function frame() {
-    if (loop.running) {
-      const stepCount = loop.speed >= 2 ? 2 : 1;
-      for (let i = 0; i < stepCount; i++) {
-        if (!loop.running) break;
-        runTurn();
-      }
+  function clearTimer() {
+    if (timerId !== null) {
+      clearTimeout(timerId);
+      timerId = null;
     }
-    requestAnimationFrame(frame);
+  }
+
+  function scheduleNextTurn() {
+    clearTimer();
+    if (!loop.running || state.status.finished) return;
+    const baseDelay = Math.max(16, loop.interval / loop.speed);
+    timerId = setTimeout(() => {
+      timerId = null;
+      if (!loop.running) return;
+      runTurn();
+      if (loop.running && !state.status.finished) {
+        scheduleNextTurn();
+      }
+    }, baseDelay);
   }
 
   renderer.render(state);

@@ -1,6 +1,6 @@
 export function init() {
   return {
-    job: "mage",
+    job: "guardian",
     initialPosition: { x: 10, y: 9 },
     memory: { burstTurn: -1 }
   };
@@ -19,7 +19,18 @@ export function update(state, api) {
     }
   }
 
-  if (!weakest) return actions.moveToward(17, 9);
+  if (!weakest) {
+    const castle = state.enemyCastle;
+    if (castle?.position) {
+      const dist = utils.distance(self.position, castle.position);
+      const range = self.stats.range / 10;
+      if (dist <= range) {
+        return actions.attackCastle();
+      }
+      return actions.moveToward(castle.position.x, castle.position.y);
+    }
+    return actions.moveToward(17, 9);
+  }
   if (!self.skill.used && turn >= 3) return actions.useSkill(weakest);
   if (utils.inRange(self, weakest)) return actions.attack(weakest);
 

@@ -20,5 +20,16 @@ export function update(state, api) {
   }
 
   if (self.position.x > 26) return actions.moveToward(26, self.position.y);
+
+  const castle = state.enemyCastle;
+  if (castle?.position) {
+    const dist = utils.distance(self.position, castle.position);
+    const range = self.stats.range / 10;
+    if (dist <= range) {
+      return actions.attackCastle();
+    }
+    return actions.moveToward(castle.position.x, castle.position.y);
+  }
+
   return actions.moveToward(self.position.x, self.position.y);
 }

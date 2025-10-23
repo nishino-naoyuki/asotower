@@ -1,9 +1,9 @@
-import { loadTeams, createBattle } from "./engine/game-engine.js";
-import { Renderer } from "./render/renderer.js";
-import { Overlay } from "./render/ui-overlay.js";
-import { Controls } from "./render/controls.js";
-import { audioManager } from "./render/audio-manager.js";
-import { validateTeams } from "./sdk/validator.js";
+import { loadTeams, createBattle } from "./engine/game-engine.js?v=202510231119";
+import { Renderer } from "./render/renderer.js?v=202510231131";
+import { Overlay } from "./render/ui-overlay.js?v=202510230936";
+import { Controls } from "./render/controls.js?v=202510230936";
+import { audioManager } from "./render/audio-manager.js?v=202510230936";
+import { validateTeams } from "./sdk/validator.js?v=202510230936";
 
 const canvas = document.getElementById("battle-canvas");
 const renderer = new Renderer(canvas);
@@ -14,7 +14,7 @@ const controls = new Controls();
 let battle = null;
 
 async function startBattle() {
-  console.log("戦闘開始");
+  console.log("戦闘開始！");
   overlay.clearLog();
   overlay.showMessage("チーム読込中…");
 
@@ -28,7 +28,7 @@ async function startBattle() {
   battle = createBattle({ west, east, config, renderer, overlay });
   audioManager.playBgm("assets/audio/bgm/main_theme.mp3");
   battle.start();
-  overlay.showMessage("試合開始！");
+  overlay.showMessage("試合開始！！");
 }
 
 controls.on("play", () => battle?.play());

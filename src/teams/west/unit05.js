@@ -22,5 +22,15 @@ export function update(state, api) {
   const anchorX = 14;
   if (self.position.x < anchorX) return actions.moveToward(anchorX, self.position.y);
 
+  const castle = state.enemyCastle;
+  if (castle?.position) {
+    const dist = utils.distance(self.position, castle.position);
+    const range = self.stats.range / 10;
+    if (dist <= range) {
+      return actions.attackCastle();
+    }
+    return actions.moveToward(castle.position.x, castle.position.y);
+  }
+
   return actions.moveToward(self.position.x, self.position.y);
 }

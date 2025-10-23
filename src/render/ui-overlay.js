@@ -58,7 +58,7 @@ export class Overlay {
       <p>HP: ${unit.hp}</p>
       <p>位置: (${unit.position.x.toFixed(1)}, ${unit.position.y.toFixed(1)})</p>
       <p>速度: ${unit.stats.speed} (移動${unit.stats.speed / 10}マス/ターン)</p>
-      <p>射程: ${unit.stats.range}</p>
+    <p>射程: ${(unit.stats.range / 10).toFixed(1)}マス</p>
       <p>スキル: ${unit.skill.used ? "使用済み" : "未使用"}</p>`;
   }
 

@@ -1,4 +1,4 @@
-import { AssetLoader } from "./asset-loader.js";
+import { AssetLoader } from "./asset-loader.js?v=202510231119";
 
 const TILE = 32;
 const OVERLAY_HEIGHT = 32;
@@ -11,10 +11,11 @@ const COLORS = {
   grid: "rgba(37, 50, 74, 0.6)",
   wallFallback: "#8892a6",
   wallText: "#111827",
-  unitWest: "#48a9ff",
-  unitEast: "#ff6b6b",
+  unitWest: "#ff6b6b",
+  unitEast: "#4c9dff",
   hpBg: "#111827",
-  hpFill: "#4ade80",
+  hpFillWest: "#f87171",
+  hpFillEast: "#60a5fa",
   overlayBg: "rgba(15, 22, 36, 0.88)",
   overlayText: "#f8fafc"
 };
@@ -113,10 +114,12 @@ export class Renderer {
   }
 
   drawZones(ctx, map) {
+    const zoneTiles = Math.floor(map.width / 2);
+    const zoneWidth = zoneTiles * TILE;
     ctx.fillStyle = COLORS.westZone;
-    ctx.fillRect(0, 0, 20 * TILE, map.height * TILE);
+    ctx.fillRect(0, 0, zoneWidth, map.height * TILE);
     ctx.fillStyle = COLORS.eastZone;
-    ctx.fillRect((map.width - 20) * TILE, 0, 20 * TILE, map.height * TILE);
+    ctx.fillRect(map.width * TILE - zoneWidth, 0, zoneWidth, map.height * TILE);
   }
 
   drawWalls(ctx, walls = []) {
@@ -171,18 +174,32 @@ export class Renderer {
       if (unit.hp <= 0) return;
       const center = toCenterPixels(unit.position);
       const jobSprite = this.getImage(`job_${unit.job}`);
+      const unitColor = unit.side === "west" ? COLORS.unitWest : COLORS.unitEast;
+      ctx.fillStyle = unitColor;
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, 16, 0, Math.PI * 2);
+      ctx.fill();
+
       if (jobSprite) {
         ctx.drawImage(jobSprite, center.x - TILE * 0.75, center.y - TILE * 0.75, TILE * 1.5, TILE * 1.5);
       } else {
-        ctx.fillStyle = unit.side === "west" ? COLORS.unitWest : COLORS.unitEast;
+        ctx.fillStyle = "#0f172a";
         ctx.beginPath();
         ctx.arc(center.x, center.y, 14, 0, Math.PI * 2);
         ctx.fill();
+        ctx.fillStyle = "#e2e8f0";
+        ctx.font = "11px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(unit.job.slice(0, 2).toUpperCase(), center.x, center.y);
+        ctx.textAlign = "start";
+        ctx.textBaseline = "alphabetic";
       }
 
       ctx.fillStyle = COLORS.hpBg;
       ctx.fillRect(center.x - 18, center.y + 18, 36, 5);
-      ctx.fillStyle = COLORS.hpFill;
+      const hpColor = unit.side === "west" ? COLORS.hpFillWest : COLORS.hpFillEast;
+      ctx.fillStyle = hpColor;
       ctx.fillRect(center.x - 18, center.y + 18, 36 * Math.max(0, unit.hp / unit.stats.hp), 5);
 
       ctx.fillStyle = COLORS.overlayText;

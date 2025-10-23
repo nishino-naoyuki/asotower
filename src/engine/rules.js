@@ -1,4 +1,4 @@
-import { JOB_DATA } from "../data/jobs.js";
+import { JOB_DATA } from "../data/jobs.js?v=202510231119";
 
 export function computeDamage(attacker, defender) {
   const attack = attacker.stats.attack;
@@ -33,9 +33,13 @@ export function movementPerTurn(unit) {
 }
 
 export function isInRange(attacker, target) {
-  const range = attacker.stats.range;
+  const range = rangePerTurn(attacker);
   const dx = target.position.x - attacker.position.x;
   const dy = target.position.y - attacker.position.y;
   const dist = Math.hypot(dx, dy);
   return dist <= range;
+}
+
+export function rangePerTurn(unit) {
+  return unit.stats.range / 10;
 }

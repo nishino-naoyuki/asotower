@@ -24,8 +24,16 @@ export function update(state, api) {
   // 最も近い敵を探す（utils.findClosestはfor文の代わりになる関数）
   const target = utils.findClosest(enemies, self.position);
 
-  // 敵が見えなければ中央方向へ前進
+  // 敵が見えなければ中央方向へ前進（いなければ城を攻撃）
   if (!target) {
+    const castle = state.enemyCastle;
+    if (castle?.position) {
+      const dist = utils.distance(self.position, castle.position);
+      if (dist <= self.stats.range) {
+        return actions.attackCastle();
+      }
+      return actions.moveToward(castle.position.x, castle.position.y);
+    }
     return actions.moveToward(20, self.position.y);
   }
 
@@ -39,3 +47,9 @@ export function update(state, api) {
   const nextStep = utils.stepToward(self.position, target.position);
   return actions.moveToward(nextStep.x, nextStep.y);
 }
+````
+
+## 3. 補足メモ
+- 射程は `stats.range / 10` マスとして判定されます。表示される値と合わせて行動ロジックを調整してください。
+- `state.enemyCastle` / `state.allyCastle` で各城のHPと座標が参照できます。敵城が射程内であれば `actions.attackCastle()` を返して直接ダメージを与えられます。
+- `actions.moveToward(x, y)` の座標はマップ座標（整数）を想定していますが、補間移動のために小数が指定されても問題ありません。

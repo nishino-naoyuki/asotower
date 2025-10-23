@@ -1,6 +1,6 @@
 export function init() {
   return {
-    job: "soldier",
+    job: "guardian",
     initialPosition: { x: 6, y: 6 },
     memory: { lastTurn: -1 }
   };
@@ -11,7 +11,18 @@ export function update(state, api) {
   const { actions, utils } = api;
 
   const target = utils.findClosest(enemies, self.position);
-  if (!target) return actions.moveToward(15, 6);
+  if (!target) {
+    const castle = state.enemyCastle;
+    if (castle?.position) {
+      const dist = utils.distance(self.position, castle.position);
+      const range = self.stats.range / 10;
+      if (dist <= range) {
+        return actions.attackCastle();
+      }
+      return actions.moveToward(castle.position.x, castle.position.y);
+    }
+    return actions.moveToward(15, 6);
+  }
 
   if (!self.skill.used && turn > 5) return actions.useSkill(target);
   if (utils.inRange(self, target)) return actions.attack(target);

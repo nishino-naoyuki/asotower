@@ -1,6 +1,6 @@
 export function init() {
   return {
-    job: "archer",
+    job: "guardian",
     initialPosition: { x: 8, y: 4 },
     memory: { focusId: null }
   };
@@ -11,7 +11,18 @@ export function update(state, api) {
   const { actions, utils } = api;
 
   const target = utils.findClosest(enemies, self.position);
-  if (!target) return actions.moveToward(18, 4);
+  if (!target) {
+    const castle = state.enemyCastle;
+    if (castle?.position) {
+      const dist = utils.distance(self.position, castle.position);
+      const range = self.stats.range / 10;
+      if (dist <= range) {
+        return actions.attackCastle();
+      }
+      return actions.moveToward(castle.position.x, castle.position.y);
+    }
+    return actions.moveToward(18, 4);
+  }
 
   if (utils.inRange(self, target)) {
     state.memory.focusId = target.id;

@@ -9,6 +9,7 @@ export async function loadConfig() {
     west: baseConfig.west,
     east: baseConfig.east,
     maxUnits: baseConfig.maxUnits,
+    turnIntervalMs: baseConfig.turnIntervalMs ?? 5000,
     jobs: JOB_DATA,
     map: MAP_DATA
   });

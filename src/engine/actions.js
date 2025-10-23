@@ -1,4 +1,4 @@
-import { movementPerTurn, computeDamage, isInRange } from "./rules.js";
+import { movementPerTurn, computeDamage, isInRange, rangePerTurn } from "./rules.js?v=202510230936";
 
 export function resolveTurn(state) {
   const ordered = [...state.units].sort((a, b) => {
@@ -26,6 +26,8 @@ export function resolveTurn(state) {
 }
 
 function createStateView(state, unit) {
+  const enemySide = unit.side === "west" ? "east" : "west";
+  const castles = state.map.castles ?? {};
   return {
     self: unit,
     allies: state.units.filter((u) => u.side === unit.side && u.id !== unit.id && u.hp > 0),
@@ -33,7 +35,17 @@ function createStateView(state, unit) {
     map: state.map,
     turn: state.turn,
     log: state.log,
-    memory: unit.memory
+    memory: unit.memory,
+    allyCastle: {
+      side: unit.side,
+      hp: castles[`${unit.side}Hp`] ?? 0,
+      position: castles[unit.side] ? { ...castles[unit.side] } : null
+    },
+    enemyCastle: {
+      side: enemySide,
+      hp: castles[`${enemySide}Hp`] ?? 0,
+      position: castles[enemySide] ? { ...castles[enemySide] } : null
+    }
   };
 }
 
@@ -42,6 +54,7 @@ function createApi() {
     actions: {
       moveToward: (x, y) => ({ type: "move", x, y }),
       attack: (target) => ({ type: "attack", targetId: target.id }),
+      attackCastle: () => ({ type: "attackCastle" }),
       useSkill: (target) => ({ type: "skill", targetId: target?.id ?? null })
     },
     utils: {
@@ -85,6 +98,9 @@ function executeCommand(state, unit, command) {
     case "attack":
       handleAttack(state, unit, command);
       break;
+    case "attackCastle":
+      handleAttackCastle(state, unit);
+      break;
     case "skill":
       handleSkill(state, unit, command);
       break;
@@ -101,10 +117,45 @@ function handleMove(state, unit, command) {
   if (distance === 0) return;
 
   const scale = Math.min(1, speed / distance);
-  unit.position.x += dx * scale;
-  unit.position.y += dy * scale;
+  const target = {
+    x: unit.position.x + dx * scale,
+    y: unit.position.y + dy * scale
+  };
+
+  const adjusted = adjustForWalls(state.map, unit.position, target);
+  unit.position.x = adjusted.x;
+  unit.position.y = adjusted.y;
 
   state.log.push({ turn: state.turn, message: `${unit.id} が移動` });
+}
+
+function adjustForWalls(map, from, to) {
+  const walls = map?.walls ?? [];
+  if (!walls.length) return { ...to };
+
+  const maxDelta = Math.max(Math.abs(to.x - from.x), Math.abs(to.y - from.y));
+  const steps = Math.max(1, Math.ceil(maxDelta * 5));
+  let safe = { ...from };
+
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    const point = {
+      x: from.x + (to.x - from.x) * t,
+      y: from.y + (to.y - from.y) * t
+    };
+    if (isWallCell(walls, point)) {
+      return safe;
+    }
+    safe = point;
+  }
+
+  return to;
+}
+
+function isWallCell(walls, point) {
+  const cellX = Math.floor(point.x);
+  const cellY = Math.floor(point.y);
+  return walls.some((wall) => wall.x === cellX && wall.y === cellY);
 }
 
 function handleAttack(state, unit, command) {
@@ -121,6 +172,30 @@ function handleAttack(state, unit, command) {
   state.log.push({ turn: state.turn, message: `${unit.id} が ${target.id} に ${damage} ダメージ` });
 }
 
+function handleAttackCastle(state, unit) {
+  const enemySide = unit.side === "west" ? "east" : "west";
+  const castles = state.map.castles ?? {};
+  const castlePos = castles[enemySide];
+  const hpKey = enemySide === "west" ? "westHp" : "eastHp";
+  if (!castlePos || castles[hpKey] <= 0) return;
+
+  const distance = Math.hypot(castlePos.x - unit.position.x, castlePos.y - unit.position.y);
+  if (distance > rangePerTurn(unit)) {
+    state.log.push({ turn: state.turn, message: `${unit.id} の攻撃は城に届かなかった` });
+    return;
+  }
+
+  const castleDefense = 30;
+  const dummyCastle = { stats: { defense: castleDefense }, job: "castle" };
+  const damage = Math.max(1, computeDamage(unit, dummyCastle));
+  castles[hpKey] = Math.max(0, (castles[hpKey] ?? 0) - damage);
+  state.log.push({ turn: state.turn, message: `${unit.id} が敵城に ${damage} ダメージ` });
+
+  if (castles[hpKey] <= 0) {
+    state.log.push({ turn: state.turn, message: `${enemySide === "west" ? "西軍" : "東軍"}の城が陥落した` });
+  }
+}
+
 function handleSkill(state, unit) {
   if (unit.skill.used) {
     state.log.push({ turn: state.turn, message: `${unit.id} のスキルは既に使用済み` });
@@ -135,13 +210,10 @@ function checkEndCondition(state) {
   const eastCastle = state.map.castles.eastHp;
   if (westCastle <= 0 || eastCastle <= 0) {
     state.status.finished = true;
-    state.status.winner = westCastle <= 0 ? "東軍" : "西軍";
-    return;
-  }
-  const westAlive = state.units.some((u) => u.side === "west" && u.hp > 0);
-  const eastAlive = state.units.some((u) => u.side === "east" && u.hp > 0);
-  if (!westAlive || !eastAlive) {
-    state.status.finished = true;
-    state.status.winner = westAlive ? "西軍" : eastAlive ? "東軍" : "引き分け";
+    if (westCastle <= 0 && eastCastle <= 0) {
+      state.status.winner = "引き分け";
+    } else {
+      state.status.winner = westCastle <= 0 ? "東軍" : "西軍";
+    }
   }
 }

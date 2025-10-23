@@ -15,7 +15,18 @@ export function update(state, api) {
     if (!weakest || enemy.hp < weakest.hp) weakest = enemy;
   }
 
-  if (!weakest) return actions.moveToward(23, 10);
+  if (!weakest) {
+    const castle = state.enemyCastle;
+    if (castle?.position) {
+      const dist = utils.distance(self.position, castle.position);
+      const range = self.stats.range / 10;
+      if (dist <= range) {
+        return actions.attackCastle();
+      }
+      return actions.moveToward(castle.position.x, castle.position.y);
+    }
+    return actions.moveToward(23, 10);
+  }
   if (!self.skill.used && turn >= 3) return actions.useSkill(weakest);
   if (utils.inRange(self, weakest)) return actions.attack(weakest);
 
