@@ -29,7 +29,8 @@ export function update(state, api) {
     const castle = state.enemyCastle;
     if (castle?.position) {
       const dist = utils.distance(self.position, castle.position);
-      if (dist <= self.stats.range) {
+      const range = self.stats.range / 10;
+      if (dist <= range) {
         return actions.attackCastle();
       }
       return actions.moveToward(castle.position.x, castle.position.y);
@@ -53,3 +54,5 @@ export function update(state, api) {
 - 射程は `stats.range / 10` マスとして判定されます。表示される値と合わせて行動ロジックを調整してください。
 - `state.enemyCastle` / `state.allyCastle` で各城のHPと座標が参照できます。敵城が射程内であれば `actions.attackCastle()` を返して直接ダメージを与えられます。
 - `actions.moveToward(x, y)` の座標はマップ座標（整数）を想定していますが、補間移動のために小数が指定されても問題ありません。
+- 運営側のテンプレートでは両陣営とも `teams/<side>/unit01.js` ～ `unit10.js` を読み込みます。提出ファイル名を同じ規則に合わせると差し替えが容易です。
+- 指定できる `job` のキーは `soldier`, `lancer`, `archer`, `mage`, `healer`, `guardian`, `assassin`, `engineer`, `summoner`, `scout` の10種類です。スペルミスがあると試合開始時に弾かれます。

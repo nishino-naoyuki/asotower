@@ -1,6 +1,6 @@
 export function init() {
   return {
-    job: "archer",
+    job: "healer",
     initialPosition: { x: 31, y: 5 },
     memory: { focusId: null }
   };

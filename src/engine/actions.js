@@ -85,6 +85,37 @@ function createApi() {
         const length = Math.hypot(dx, dy) || 1;
         const step = { x: from.x + dx / length, y: from.y + dy / length };
         return step;
+      },
+      closestEnemy(view) {
+        return this.findClosest(view.enemies ?? [], view.self.position);
+      },
+      closestAlly(view) {
+        return this.findClosest(view.allies ?? [], view.self.position);
+      },
+      distanceToEnemyCastle(view) {
+        const castlePos = view.enemyCastle?.position;
+        if (!castlePos) return Infinity;
+        return this.distance(view.self.position, castlePos);
+      },
+      distanceToAllyCastle(view) {
+        const castlePos = view.allyCastle?.position;
+        if (!castlePos) return Infinity;
+        return this.distance(view.self.position, castlePos);
+      },
+      distanceToClosestEnemy(view) {
+        const target = this.closestEnemy(view);
+        return target ? this.distance(view.self.position, target.position) : Infinity;
+      },
+      distanceToClosestAlly(view) {
+        const target = this.closestAlly(view);
+        return target ? this.distance(view.self.position, target.position) : Infinity;
+      },
+      remainingEnemies(view) {
+        return view.enemies?.length ?? 0;
+      },
+      remainingAllies(view) {
+        const allies = view.allies?.length ?? 0;
+        return allies + (view.self?.hp > 0 ? 1 : 0);
       }
     }
   };

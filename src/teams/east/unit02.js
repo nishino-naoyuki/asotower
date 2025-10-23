@@ -1,6 +1,6 @@
 export function init() {
   return {
-    job: "soldier",
+    job: "healer",
     initialPosition: { x: 33, y: 7 },
     memory: {}
   };
