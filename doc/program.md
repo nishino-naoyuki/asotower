@@ -53,14 +53,16 @@ src/
 ```
 
 ## 3. 起動・ビルド
-- 依存なし。リポジトリ直下で `python3 -m http.server --directory src 8000` を実行し `/src` を配信。
-- Codespaces 等では自動転送されたポート (例: `https://<workspace>-8000.preview.app.github.dev/`) へアクセス。
+- Python簡易サーバー：リポジトリ直下で `python3 -m http.server --directory src 8000` を実行し `/src` を配信。Codespaces等では自動転送されたポート (例: `https://<workspace>-8000.preview.app.github.dev/`) へアクセス。
+- VS Code Live Server：VS Code でリポジトリを開き、拡張機能「Live Server」（Ritwick Dey）を導入。`src/index.html` を右クリックし **Open with Live Server** を選択し、`http://127.0.0.1:5500/src/index.html` へアクセス。
 
 ## 4. 試合開始フロー
 1. `main.js` が `sdk/api.js` 経由で `config/team-map.json`・`data/jobs.js`・`data/map.js` を読み込みUIへ反映。
 2. 「戦闘開始」で `loadTeams()` が `teams/west|east` からボットを動的 import（全ファイル名は `unitXX.js` に統一）。
 3. `sdk/validator.js` が `init`/`update` の存在と戻り値を検証。
 4. 正常なら `engine/game-engine.js` の `startMatch()` が初期状態を生成しループ開始。
+5. `init` が返す `name` はユニット表示名として保持し、未指定時はJOBキーを利用。
+6. `init` の `initialPosition` は絶対座標指定に加え、自城を原点とするオフセット（`relativeTo: "allyCastle"`）や `forward`/`lateral` を使った敵方向基準の配置をサポート。
 
 ## 5. ゲームループ
 - ターン制（1ターン=全ユニットの `update` 実行）。

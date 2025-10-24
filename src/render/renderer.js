@@ -213,9 +213,14 @@ export class Renderer {
       ctx.fillStyle = hpColor;
       ctx.fillRect(center.x - 18, center.y + 18, 36 * Math.max(0, unit.hp / unit.stats.hp), 5);
 
+      const label = unit.name ?? unit.job;
       ctx.fillStyle = COLORS.overlayText;
-      ctx.font = "11px sans-serif";
-      ctx.fillText(unit.job, center.x - 18, center.y - 18);
+      ctx.font = "bold 16px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.fillText(label, center.x, center.y - 22);
+      ctx.textAlign = "start";
+      ctx.textBaseline = "alphabetic";
     });
   }
 

@@ -10,8 +10,8 @@ export const MAP_DATA = {
 //    { x: 20, y: 9, hp: 300 }
   ],
   castles: {
-    westHp: 200,
-    eastHp: 200,
+    westHp: 100,
+    eastHp: 100,
     west: { x: 1, y: 7 },
     east: { x: 28, y: 7 }
   }

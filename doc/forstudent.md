@@ -11,7 +11,13 @@
 export function init(context) {
   return {
     job: 'archer',                      // 使用するJOB（doc/job.md参照）
-    initialPosition: { x: 5, y: 6 },    // 初期位置（マップ上のマス座標）
+    name: 'ユニット太郎',               // 画面に表示したい名前（未指定ならJOB名）
+    initialPosition: {                 // 自陣の城からのオフセット指定
+      relativeTo: 'allyCastle',        // 自城を基準にすることを明示
+      forward: 3,                      // 敵方向へ3マス（東西どちらでも前進）
+      lateral: -1                      // 上方向へ1マス（マップのYは下に行くほど増加）
+      // x / y を併用すれば城座標に対する絶対オフセットも指定できます
+    },
     memory: { lastTargetId: null }      // 状態を保存しておけるメモリ（任意）
   };
 }
@@ -52,6 +58,9 @@ export function update(state, api) {
 
 ## 3. 補足メモ
 - 射程は `stats.range / 10` マスとして判定されます。表示される値と合わせて行動ロジックを調整してください。
+- キャラクターアイコン上部に表示される名前は `init` で返した `name` プロパティです。省略するとJOB名が表示されます。
+- `init(context)` の `context` には `side` のほか `allyCastle`, `enemyCastle`, `mapSize` が含まれます。城位置を使って自分で絶対座標を計算することも可能です。
+- `initialPosition` は `{ x, y }` で直接座標を指定する従来形式に加え、`{ relativeTo: 'allyCastle', forward: 3, lateral: -1 }` や `{ relativeTo: 'allyCastle', x: 3, y: -1 }` のように自城を原点としたオフセット指定ができます（`forward` は敵方向、`lateral` は下方向が正）。
 - `state.enemyCastle` / `state.allyCastle` で各城のHPと座標が参照できます。敵城が射程内であれば `actions.attackCastle()` を返して直接ダメージを与えられます。
 - `actions.moveToward(x, y)` の座標はマップ座標（整数）を想定していますが、補間移動のために小数が指定されても問題ありません。
 - 運営側のテンプレートでは両陣営とも `teams/<side>/unit01.js` ～ `unit10.js` を読み込みます。提出ファイル名を同じ規則に合わせると差し替えが容易です。

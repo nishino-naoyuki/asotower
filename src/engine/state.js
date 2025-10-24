@@ -1,5 +1,9 @@
 import { JOB_DATA } from "../data/jobs.js?v=202510230936";
 import { MAP_DATA } from "../data/map.js?v=202510230936";
+import {
+  buildInitContext,
+  resolveUnitPosition
+} from "../shared/unit-position.js?v=202510241905";
 
 export function createInitialState({ west, east, config, sandbox }) {
   const units = [];
@@ -11,15 +15,20 @@ export function createInitialState({ west, east, config, sandbox }) {
   for (const { side, team } of allTeams) {
     for (const info of team) {
       const module = info.module;
-      const initResult = module.init?.({ side }) || {};
+      const initContext = buildInitContext(side);
+      const initResult = module.init?.(initContext) || {};
       const jobKey = initResult.job ?? info.job;
       const job = JOB_DATA[jobKey];
-      const pos = initResult.initialPosition ?? info.initialPosition;
+      const pos = resolveUnitPosition(initResult.initialPosition, info.initialPosition, side);
+      const rawName = typeof initResult.name === "string" ? initResult.name.trim() : "";
+      const fallbackName = typeof jobKey === "string" && jobKey.length ? jobKey : `${side}-${info.slot}`;
+      const unitName = rawName || fallbackName;
       units.push({
         id: `${side}-${info.slot}`,
         side,
         slot: info.slot,
         job: jobKey,
+        name: unitName,
         stats: { ...job.stats },
         skill: { ...job.skill, used: false },
         position: { ...pos },

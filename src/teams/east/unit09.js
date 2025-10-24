@@ -1,7 +1,12 @@
 export function init() {
   return {
     job: "summoner",
-    initialPosition: { x: 28, y: 11 },
+    name: "East Unit 09",
+    initialPosition: {
+      relativeTo: "allyCastle",
+      x: 0,
+      y: 4
+    },
     memory: {}
   };
 }

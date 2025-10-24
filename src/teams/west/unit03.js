@@ -1,7 +1,12 @@
 export function init() {
   return {
     job: "guardian",
-    initialPosition: { x: 8, y: 4 },
+    name: "West Unit 03",
+    initialPosition: {
+      relativeTo: "allyCastle",
+      x: 7,
+      y: -3
+    },
     memory: { focusId: null }
   };
 }

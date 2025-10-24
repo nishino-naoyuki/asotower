@@ -1,7 +1,12 @@
 export function init() {
   return {
     job: "healer",
-    initialPosition: { x: 31, y: 5 },
+    name: "East Unit 03",
+    initialPosition: {
+      relativeTo: "allyCastle",
+      x: 3,
+      y: -2
+    },
     memory: { focusId: null }
   };
 }

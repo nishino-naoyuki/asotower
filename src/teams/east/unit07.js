@@ -1,7 +1,12 @@
 export function init() {
   return {
     job: "engineer",
-    initialPosition: { x: 36, y: 8 },
+    name: "East Unit 07",
+    initialPosition: {
+      relativeTo: "allyCastle",
+      x: 8,
+      y: 1
+    },
     memory: { deployed: false }
   };
 }

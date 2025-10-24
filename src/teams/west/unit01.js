@@ -1,7 +1,12 @@
 export function init() {
   return {
     job: "guardian",
-    initialPosition: { x: 4, y: 5 },
+    name: "西野",
+    initialPosition: {
+      relativeTo: "allyCastle",
+      x: 3,
+      y: -2
+    },
     memory: { defending: true }
   };
 }

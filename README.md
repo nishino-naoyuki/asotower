@@ -11,12 +11,20 @@
 ブラウザ上で動作する純ES Modules構成の対戦型タワーディフェンスゲームです。運営が両陣営のユニットスクリプトと設定ファイルを用意すると、ブラウザから戦闘を起動してリプレイを観戦できます。学生は与えられたSDKを用いて自チームのユニットAIを作成し、対戦形式で競い合います。
 
 ## プログラムの実行方法
+### 方法A: Pythonの簡易サーバーを使う
 1. リポジトリのルートで静的サーバーを起動します。
 	 ```bash
 	 python3 -m http.server --directory src 8000
 	 ```
-2. Codespaces のポート転送機能により自動で公開される `http://localhost:8000` にアクセスします。
+2. Codespaces やローカルPCから `http://localhost:8000`（Codespacesは転送URL）へアクセスします。
 3. ブラウザ上のUIからチーム編成を確認し、「戦闘開始」を押して試合を開始します。
+
+### 方法B: VS Code の Live Server 拡張機能を使う
+1. VS Code で本リポジトリの `asotower` フォルダを開きます。
+2. 拡張機能「Live Server」（Ritwick Dey 作）をインストールします。
+3. エクスプローラーで `src/index.html` を右クリックし、**Open with Live Server** を選択します。
+4. Live Server が自動でブラウザを開かない場合は、手動で `http://127.0.0.1:5500/src/index.html` へアクセスしてください。
+5. 表示された画面で「戦闘開始」を押して試合を開始します。
 
 ## プログラムのフォルダ構成
 ```text
