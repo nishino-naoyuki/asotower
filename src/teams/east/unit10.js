@@ -4,8 +4,8 @@ export function init() {
     name: "East Unit 10",
     initialPosition: {
       relativeTo: "allyCastle",
-      x: 6,
-      y: 5
+      x: 1,
+      y: -12
     },
     memory: {}
   };

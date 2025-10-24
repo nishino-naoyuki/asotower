@@ -1,6 +1,7 @@
 {
   "maxUnits": 10,
-  "turnIntervalMs": 2000,
+  "turnIntervalMs": 1000,
+  "unitActionIntervalMs": 500,
   "west": [
     { "slot": 1, "file": "unit01.js", "job": "guardian", "initialPosition": { "x": 4, "y": 5 } },
     { "slot": 2, "file": "unit02.js", "job": "soldier", "initialPosition": { "x": 6, "y": 6 } },

@@ -1,9 +1,9 @@
 import { createInitialState } from "./state.js";
-import { resolveTurn } from "./actions.js?v=202510231431";
+import { createTurnProcessor } from "./actions.js?v=202510242321";
 import { Renderer } from "../render/renderer.js";
 import { ReplayRecorder } from "../render/replay-recorder.js";
 import { Sandbox } from "../sdk/sandbox.js";
-import { loadConfig } from "../sdk/api.js";
+import { loadConfig } from "../sdk/api.js?v=202510242340";
 import { audioManager } from "../render/audio-manager.js?v=202510231450";
 
 export async function loadTeams() {
@@ -63,7 +63,7 @@ export function createBattle({ west, east, config, renderer, overlay }) {
     },
     step() {
       this.pause();
-      runTurn();
+      runTurn().catch((error) => console.error("runTurn error:", error));
     },
     setSpeed(speed) {
       this.speed = Math.max(0.1, speed);
@@ -82,9 +82,39 @@ export function createBattle({ west, east, config, renderer, overlay }) {
     }
   };
 
-  function runTurn() {
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const waitForNextFrame = () =>
+    new Promise((resolve) => requestAnimationFrame(resolve));
+
+  async function runTurn() {
     console.log("runTurn state:", state);
-    resolveTurn(state);
+    const processor = createTurnProcessor(state, config);
+    const unitActionIntervalMs = Math.max(
+      0,
+      Number(
+        config.unitActionIntervalMs ?? state.config?.unitActionIntervalMs ?? 0
+      ) || 0
+    );
+
+    while (true) {
+      const step = await processor.next();
+      if (!step) break;
+
+      renderer.render(state);
+      overlay.update(state);
+      playPendingEffectAudio();
+      ensureEffectLoop();
+
+      if (state.status.finished) break;
+
+      await waitForNextFrame();
+      if (unitActionIntervalMs > 0) {
+        await sleep(unitActionIntervalMs);
+      }
+    }
+
+    processor.finalize();
+
     playPendingEffectAudio();
     renderer.render(state);
     overlay.update(state);
@@ -111,10 +141,14 @@ export function createBattle({ west, east, config, renderer, overlay }) {
     clearTimer();
     if (!loop.running || state.status.finished) return;
     const baseDelay = Math.max(16, loop.interval / loop.speed);
-    timerId = setTimeout(() => {
+    timerId = setTimeout(async () => {
       timerId = null;
       if (!loop.running) return;
-      runTurn();
+      try {
+        await runTurn();
+      } catch (error) {
+        console.error("runTurn error:", error);
+      }
       if (loop.running && !state.status.finished) {
         scheduleNextTurn();
       }

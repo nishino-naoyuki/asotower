@@ -1,29 +1,64 @@
 import { movementPerTurn, computeDamage, isInRange, rangePerTurn } from "./rules.js";
 
-export function resolveTurn(state) {
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export function createTurnProcessor(state, config = {}) {
   pruneExpiredEffects(state);
-  const ordered = [...state.units].sort((a, b) => {
+  const turnOrder = [...state.units].sort((a, b) => {
     const speedDiff = b.stats.speed - a.stats.speed;
     return speedDiff !== 0 ? speedDiff : a.slot - b.slot;
   });
 
   state.log = [];
 
-  for (const unit of ordered) {
-    if (unit.hp <= 0 || state.status.finished) continue;
-    const module = unit.module;
-    let command = null;
-    try {
-      command = module.update?.(createStateView(state, unit), createApi()) ?? null;
-    } catch (err) {
-      state.log.push({ turn: state.turn, message: `${unit.id} のupdateでエラー: ${err}` });
-      continue;
-    }
-    executeCommand(state, unit, command);
-  }
+  let index = 0;
 
-  state.turn += 1;
-  checkEndCondition(state);
+  return {
+    async next() {
+      while (index < turnOrder.length) {
+        const unit = turnOrder[index++];
+        if (unit.hp <= 0 || state.status.finished) continue;
+
+        const module = unit.module;
+        let command = null;
+        try {
+          command =
+            module.update?.(createStateView(state, unit), createApi()) ?? null;
+        } catch (err) {
+          state.log.push({
+            turn: state.turn,
+            message: `${unit.id} のupdateでエラー: ${err}`
+          });
+          continue;
+        }
+
+        executeCommand(state, unit, command);
+        return { unit };
+      }
+      return null;
+    },
+    finalize() {
+      state.turn += 1;
+      checkEndCondition(state);
+    }
+  };
+}
+
+export async function resolveTurn(state, config = {}, hooks = {}) {
+  const { onUnitProcessed } = hooks;
+  const processor = createTurnProcessor(state, config);
+
+  try {
+    while (true) {
+      const step = await processor.next();
+      if (!step) break;
+      if (typeof onUnitProcessed === "function") {
+        await onUnitProcessed(step.unit, state);
+      }
+    }
+  } finally {
+    processor.finalize();
+  }
 }
 
 function createStateView(state, unit) {

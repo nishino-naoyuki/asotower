@@ -1,5 +1,5 @@
-import { loadTeams, createBattle } from "./engine/game-engine.js?v=202510231748";
-import { Renderer } from "./render/renderer.js?v=202510241810";
+import { loadTeams, createBattle } from "./engine/game-engine.js?v=202510242316";
+import { Renderer } from "./render/renderer.js?v=202510242316";
 import { Overlay } from "./render/ui-overlay.js?v=202510230936";
 import { Controls } from "./render/controls.js?v=202510231748";
 import { audioManager } from "./render/audio-manager.js?v=202510241705";
