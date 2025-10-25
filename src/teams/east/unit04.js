@@ -1,10 +1,10 @@
 export function init() {
   return {
-    job: "healer",
-    name: "East Unit 04",
+    job: "lancer",
+    name: "近藤",
     initialPosition: {
       relativeTo: "allyCastle",
-      x: 1,
+      x: 5,
       y: 3
     },
     memory: {}

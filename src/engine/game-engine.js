@@ -17,10 +17,12 @@ export async function loadTeams() {
 
 async function loadSide(side, config) {
   const team = [];
+  const orientation = side === "east" ? -1 : 1;
   for (const slot of config[side]) {
     const moduleUrl = new URL(`../teams/${side}/${slot.file}`, import.meta.url);
     moduleUrl.searchParams.set("v", Date.now().toString());
     const mod = await Sandbox.importModule(moduleUrl.href);
+    slot.initialPosition.x *= orientation;
     team.push({
       slot: slot.slot,
       file: slot.file,
@@ -30,6 +32,7 @@ async function loadSide(side, config) {
       side
     });
   }
+  console.log("team loaded:", side, team);
   return team;
 }
 
