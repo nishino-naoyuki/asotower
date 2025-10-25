@@ -251,6 +251,7 @@ export class Renderer {
         case "skill":
         case "effect":
         default:
+          this.drawAttackTrace(ctx, effect, progress);
           this.drawStockEffect(ctx, effect, progress);
           break;
       }
@@ -332,7 +333,9 @@ export class Renderer {
 
   drawAttackImpact(ctx, effect, progress) {
     const target = effect.target ? toCenterPixels(effect.target) : toCenterPixels(effect.position);
-    const sprite = this.getImage("effect_impact");
+    const isSpecial = effect.variant === "special";
+    const sprite = isSpecial ? null : this.getImage("effect_impact");
+    const label = effect.label ?? effect.impactLabel ?? null;
     const baseSize = TILE * 2.2;
     const scale = 1 + 0.4 * (1 - Math.abs(Math.cos(progress * Math.PI)));
     const size = baseSize * scale;
@@ -352,6 +355,16 @@ export class Renderer {
       ctx.beginPath();
       ctx.arc(target.x, target.y, radius, 0, Math.PI * 2);
       ctx.fill();
+    }
+    if (isSpecial && label) {
+      ctx.font = "bold 20px 'Noto Sans JP', sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = COLORS.attackTraceOutline;
+      ctx.fillStyle = "#fef3c7";
+      ctx.strokeText(label, target.x, target.y - 28);
+      ctx.fillText(label, target.x, target.y - 28);
     }
     ctx.restore();
   }

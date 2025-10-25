@@ -274,7 +274,8 @@ function handleAttack(state, unit, command) {
     jobSounds,
     source: unit.position,
     target: target.position,
-    variant: distanceBetween(unit.position, target.position) <= 1.5 ? "melee" : "ranged"
+    variant: distanceBetween(unit.position, target.position) <= 1.5 ? "melee" : "ranged",
+    impactLabel: `${damage}`
   });
 
   queueEffect(state, {
@@ -316,18 +317,45 @@ function handleAttackCastle(state, unit) {
   }
 }
 
-function handleSkill(state, unit) {
+function handleSkill(state, unit, command) {
+  if (!unit.skill) {
+    state.log.push({ turn: state.turn, message: `${unit.id} には使用可能なスキルがない` });
+    return;
+  }
   if (unit.skill.used) {
     state.log.push({ turn: state.turn, message: `${unit.id} のスキルは既に使用済み` });
     return;
   }
+
+  const target =
+    command?.targetId !== undefined
+      ? state.units.find((u) => u.id === command.targetId)
+      : null;
+
+  const skillName = unit.skill?.name ?? "必殺技";
+  const targetLabel = target ? target.id : "周囲";
+
   unit.skill.used = true;
-  state.log.push({ turn: state.turn, message: `${unit.id} がスキルを使用` });
+  state.log.push({ turn: state.turn, message: `${unit.id} が ${targetLabel} に ${skillName} を使用` });
+
+  if (target) {
+    queueEffect(state, {
+      kind: "attack",
+      position: target.position,
+      sound: "skill",
+      source: unit.position,
+      target: target.position,
+      variant: "special",
+      label: skillName
+    });
+  }
+
   queueEffect(state, {
     kind: "skill",
     position: unit.position,
     durationMs: 900,
-    sound: "skill"
+    sound: "skill",
+    label: skillName
   });
 }
 
@@ -349,7 +377,22 @@ function pruneExpiredEffects(state) {
   state.effects = (state.effects ?? []).filter((effect) => now - effect.createdAt < effect.durationMs);
 }
 
-function queueEffect(state, { kind, position, durationMs = 600, sound = null, jobSounds = [], source = null, target = null, variant = null }) {
+function queueEffect(
+  state,
+  {
+    kind,
+    position,
+    durationMs = 600,
+    sound = null,
+    jobSounds = [],
+    source = null,
+    target = null,
+    variant = null,
+    label = null,
+    traceLabel = null,
+    impactLabel = null
+  }
+) {
   const now = Date.now();
   const id = (state.effectSeq = (state.effectSeq ?? 0) + 1);
   if (!state.effects) state.effects = [];
@@ -365,6 +408,9 @@ function queueEffect(state, { kind, position, durationMs = 600, sound = null, jo
     ...(source ? { source: { x: source.x, y: source.y } } : {}),
     ...(target ? { target: { x: target.x, y: target.y } } : {}),
     ...(variant ? { variant } : {}),
+    ...(label ? { label } : {}),
+    ...(traceLabel ? { traceLabel } : {}),
+    ...(impactLabel ? { impactLabel } : {}),
     played: false
   });
 }
