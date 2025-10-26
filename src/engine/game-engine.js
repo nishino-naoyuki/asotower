@@ -1,7 +1,5 @@
-import { createInitialState } from "./state.js?v=202510252242";
-import { createTurnProcessor } from "./actions.js?v=202510242321";
-import { Renderer } from "../render/renderer.js";
-import { ReplayRecorder } from "../render/replay-recorder.js";
+import { createInitialState } from "./state.js?v=202510261659";
+import { createTurnProcessor } from "./actions.js?v=202510261659";
 import { Sandbox } from "../sdk/sandbox.js";
 import { loadConfig } from "../sdk/api.js?v=202510242340";
 import { audioManager } from "../render/audio-manager.js?v=202510231450";
@@ -39,7 +37,6 @@ async function loadSide(side, config) {
 
 export function createBattle({ west, east, config, renderer, overlay }) {
   const sandbox = new Sandbox();
-  const recorder = new ReplayRecorder();
 
   const state = createInitialState({ west, east, config, sandbox });
   const turnIntervalMs = config.turnIntervalMs ?? 5000;
@@ -77,12 +74,6 @@ export function createBattle({ west, east, config, renderer, overlay }) {
     },
     start() {
       this.play();
-    },
-    exportReplay() {
-      recorder.download();
-    },
-    loadReplay(file) {
-      recorder.load(file, (frames) => renderer.playReplay(frames));
     }
   };
 

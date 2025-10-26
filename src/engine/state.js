@@ -1,4 +1,4 @@
-import { JOB_DATA } from "../data/jobs.js?v=202510230936";
+import { JOB_DATA } from "../data/jobs.js?v=202510261709";
 import { MAP_DATA } from "../data/map.js?v=202510261144";
 import {
   buildInitContext,

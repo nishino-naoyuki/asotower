@@ -1,4 +1,4 @@
-import { JOB_DATA } from "../data/jobs.js?v=202510261137";
+import { JOB_DATA } from "../data/jobs.js?v=202510261718";
 import {
   buildInitContext,
   resolveUnitPosition
@@ -23,7 +23,8 @@ export function validateTeams(west, east, config) {
     const initResult = unit.module.init?.(initContext) ?? {};
     const job = initResult.job ?? unit.job;
     if (!JOB_DATA[job]) {
-      errors.push(`${unit.side}の${unit.id ?? unit.file} のinitが不正なJOBを返しました。`);
+      console.log(`${unit.side}の${unit.id ?? unit.file} のinitが不正なJOBを返しました。${job} は未定義です。`);
+      errors.push(`${unit.side}の${unit.id ?? unit.file} のinitが不正なJOBを返しました。${job} は未定義です。`);
     }
     const resolvedPosition = resolveUnitPosition(initResult.initialPosition, unit.initialPosition, unit.side);
     const validX =

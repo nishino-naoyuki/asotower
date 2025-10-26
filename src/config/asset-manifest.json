@@ -94,6 +94,12 @@
       "attack": "jobs/scout_attack.png",
       "skill": "jobs/scout_skill.png",
       "win": "jobs/scout_win.png"
+    },
+    "sumo": {
+      "default": "jobs/sumo.png",
+      "attack": "jobs/sumo_attack.png",
+      "skill": "jobs/sumo_skill.png",
+      "win": "jobs/sumo_win.png"
     }
   }
 }

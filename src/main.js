@@ -1,10 +1,9 @@
-import { loadTeams, createBattle } from "./engine/game-engine.js?v=202510252142";
-import { Renderer } from "./render/renderer.js?v=202510242316";
-import { Overlay } from "./render/ui-overlay.js?v=202510230936";
-import { Controls } from "./render/controls.js?v=202510231748";
-import { audioManager } from "./render/audio-manager.js?v=202510241705";
-import { validateTeams } from "./sdk/validator.js?v=202510261130";
-import { createInitialState } from "./engine/state.js?v=20260938";
+import { loadTeams, createBattle } from "./engine/game-engine.js?v=202510261659";
+import { Renderer } from "./render/renderer.js?v=202510261659";
+import { Overlay } from "./render/ui-overlay.js?v=202510261659";
+import { Controls } from "./render/controls.js?v=202510261659";
+import { validateTeams } from "./sdk/validator.js?v=202510261721";
+import { createInitialState } from "./engine/state.js?v=202510261718";
 import { Sandbox } from "./sdk/sandbox.js?v=202510230936";
 
 const canvas = document.getElementById("battle-canvas");

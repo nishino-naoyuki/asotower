@@ -9,7 +9,7 @@ class AudioManager {
 
   async loadManifest() {
     try {
-      const response = await fetch("./assets/audio/audio-manifest.json");
+      const response = await fetch("./assets/audio/audio-manifest.json?v=" + Date.now());
       if (!response.ok) throw new Error(`manifest status ${response.status}`);
       this.manifest = await response.json();
       await Promise.all([

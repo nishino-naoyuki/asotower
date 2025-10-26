@@ -1,6 +1,9 @@
 {
   "bgm": {
-    "main": "bgm/main_theme.mp3",
+    "main": {
+      "path": "bgm/main_theme.mp3",
+      "loop": true
+    },
     "fanfare": {
       "path": "bgm/fanfare_victory.mp3",
       "loop": false
@@ -48,6 +51,10 @@
     "scout": {
       "hit": "jobs/scout_hit.mp3",
       "down": "jobs/scout_down.mp3"
+    },
+    "sumo": {
+      "hit": "jobs/sumo_hit.mp3",
+      "down": "jobs/sumo_down.mp3"
     },
     "lancer": {
       "hit": "jobs/lancer_hit.mp3",

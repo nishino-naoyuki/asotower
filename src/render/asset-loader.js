@@ -1,5 +1,5 @@
 const DEFAULT_BASE = "./assets/images";
-const MANIFEST_URL = "./config/asset-manifest.json";
+const MANIFEST_URL = "./config/asset-manifest.json?v=202510261714";
 
 export class AssetLoader {
   constructor(basePath = null, manifest = null) {
