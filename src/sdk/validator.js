@@ -1,8 +1,11 @@
-import { JOB_DATA } from "../data/jobs.js";
+import { JOB_DATA } from "../data/jobs.js?v=202510261137";
 import {
   buildInitContext,
   resolveUnitPosition
-} from "../shared/unit-position.js?v=202510241905";
+} from "../shared/unit-position.js?v=202510261137";
+import { MAP_DATA } from "../data/map.js?v=202510261144";
+
+const HALF_MAP_WIDTH = Math.floor((MAP_DATA?.width ?? MAP_DATA?.size?.x ?? 0) / 2);
 
 export function validateTeams(west, east, config) {
   const errors = [];
@@ -14,21 +17,28 @@ export function validateTeams(west, east, config) {
 
   for (const unit of allUnits) {
     if (!JOB_DATA[unit.job]) {
-      errors.push(`${unit.file} のJOB ${unit.job} は未定義です。`);
+      errors.push(`${unit.side}の${unit.file} のJOB ${unit.job} は未定義です。`);
     }
     const initContext = buildInitContext(unit.side);
     const initResult = unit.module.init?.(initContext) ?? {};
     const job = initResult.job ?? unit.job;
     if (!JOB_DATA[job]) {
-      errors.push(`${unit.id ?? unit.file} のinitが不正なJOBを返しました。`);
+      errors.push(`${unit.side}の${unit.id ?? unit.file} のinitが不正なJOBを返しました。`);
     }
     const resolvedPosition = resolveUnitPosition(initResult.initialPosition, unit.initialPosition, unit.side);
-    const validX = unit.side === "west" ? resolvedPosition.x < 20 : resolvedPosition.x >= 20;
+    const validX =
+      unit.side === "west"
+        ? resolvedPosition.x < HALF_MAP_WIDTH
+        : resolvedPosition.x >= HALF_MAP_WIDTH;
     if (!validX) {
-      errors.push(`${unit.file} の初期位置が陣地範囲外です。`);
+      console.log("invalid position for unit:", unit, resolvedPosition);
+      unit.side === "west"
+        ? errors.push(`${unit.side} の${unit.file} の初期位置が陣地範囲外(x=${MAP_DATA.castles.west.x + resolvedPosition.x})です。${HALF_MAP_WIDTH-MAP_DATA.castles.west.x}より小さい値である必要があります。`)
+        : errors.push(`${unit.side} の${unit.file} の初期位置が陣地範囲外(x=${MAP_DATA.castles.east.x - resolvedPosition.x})です。${MAP_DATA.castles.east.x-HALF_MAP_WIDTH}より小さい値である必要があります。`)
     }
+    console.log("resolvedPosition:", resolvedPosition);
   }
-
+  
   if (errors.length) {
     return { ok: false, message: errors.join("\n") };
   }

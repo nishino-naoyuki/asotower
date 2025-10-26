@@ -13,6 +13,6 @@ export const MAP_DATA = {
     westHp: 100,
     eastHp: 100,
     west: { x: 1, y: 7 },
-    east: { x: 28, y: 7 }
+    east: { x: 29, y: 7 }
   }
 };

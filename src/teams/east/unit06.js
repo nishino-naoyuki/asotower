@@ -4,7 +4,7 @@ export function init() {
     name: "川瀬",
     initialPosition: {
       relativeTo: "allyCastle",
-      x: 15,
+      x: 10,
       y: -2
     },
     memory: {}

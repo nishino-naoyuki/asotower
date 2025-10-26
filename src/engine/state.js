@@ -1,9 +1,9 @@
 import { JOB_DATA } from "../data/jobs.js?v=202510230936";
-import { MAP_DATA } from "../data/map.js?v=202510230936";
+import { MAP_DATA } from "../data/map.js?v=202510261144";
 import {
   buildInitContext,
   resolveUnitPosition
-} from "../shared/unit-position.js?v=202510241905";
+} from "../shared/unit-position.js?v=202510252114";
 
 export function createInitialState({ west, east, config, sandbox }) {
   const units = [];
@@ -19,6 +19,7 @@ export function createInitialState({ west, east, config, sandbox }) {
       const initResult = module.init?.(initContext) || {};
       const jobKey = initResult.job ?? info.job;
       const job = JOB_DATA[jobKey];
+      //console.log("module, initResult, jobKey, job:", module, initResult, jobKey, job);
       const pos = resolveUnitPosition(initResult.initialPosition, info.initialPosition, side);
       const rawName = typeof initResult.name === "string" ? initResult.name.trim() : "";
       const fallbackName = typeof jobKey === "string" && jobKey.length ? jobKey : `${side}-${info.slot}`;

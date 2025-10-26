@@ -3,27 +3,27 @@
   "turnIntervalMs": 500,
   "unitActionIntervalMs": 1000,
   "west": [
-    { "slot": 1, "file": "unit01.js", "job": "guardian", "initialPosition": { "x": 4, "y": 5 } },
-    { "slot": 2, "file": "unit02.js", "job": "soldier", "initialPosition": { "x": 6, "y": 6 } },
-    { "slot": 3, "file": "unit03.js", "job": "archer", "initialPosition": { "x": 8, "y": 4 } },
-    { "slot": 4, "file": "unit04.js", "job": "mage", "initialPosition": { "x": 10, "y": 9 } },
-    { "slot": 5, "file": "unit05.js", "job": "healer", "initialPosition": { "x": 12, "y": 5 } },
-    { "slot": 6, "file": "unit06.js", "job": "assassin", "initialPosition": { "x": 14, "y": 7 } },
-    { "slot": 7, "file": "unit07.js", "job": "engineer", "initialPosition": { "x": 3, "y": 9 } },
-    { "slot": 8, "file": "unit08.js", "job": "lancer", "initialPosition": { "x": 5, "y": 8 } },
-    { "slot": 9, "file": "unit09.js", "job": "summoner", "initialPosition": { "x": 9, "y": 10 } },
-    { "slot": 10, "file": "unit10.js", "job": "scout", "initialPosition": { "x": 7, "y": 11 } }
+    { "slot": 1, "file": "unit01.js", "job": "guardian", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 2, "file": "unit02.js", "job": "soldier", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 3, "file": "unit03.js", "job": "archer", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 4, "file": "unit04.js", "job": "mage", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 5, "file": "unit05.js", "job": "healer", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 6, "file": "unit06.js", "job": "assassin", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 7, "file": "unit07.js", "job": "engineer", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 8, "file": "unit08.js", "job": "lancer", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 9, "file": "unit09.js", "job": "summoner", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 10, "file": "unit10.js", "job": "scout", "initialPosition": { "x": 0, "y": 0 } }
   ],
   "east": [
-    { "slot": 1, "file": "unit01.js", "job": "guardian", "initialPosition": { "x": 35, "y": 6 } },
-    { "slot": 2, "file": "unit02.js", "job": "soldier", "initialPosition": { "x": 33, "y": 7 } },
-    { "slot": 3, "file": "unit03.js", "job": "archer", "initialPosition": { "x": 31, "y": 5 } },
-    { "slot": 4, "file": "unit04.js", "job": "mage", "initialPosition": { "x": 29, "y": 10 } },
-    { "slot": 5, "file": "unit05.js", "job": "healer", "initialPosition": { "x": 27, "y": 4 } },
-    { "slot": 6, "file": "unit06.js", "job": "assassin", "initialPosition": { "x": 25, "y": 9 } },
-    { "slot": 7, "file": "unit07.js", "job": "engineer", "initialPosition": { "x": 36, "y": 8 } },
-    { "slot": 8, "file": "unit08.js", "job": "lancer", "initialPosition": { "x": 32, "y": 6 } },
-    { "slot": 9, "file": "unit09.js", "job": "summoner", "initialPosition": { "x": 28, "y": 11 } },
-    { "slot": 10, "file": "unit10.js", "job": "scout", "initialPosition": { "x": 34, "y": 12 } }
+    { "slot": 1, "file": "unit01.js", "job": "guardian", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 2, "file": "unit02.js", "job": "soldier", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 3, "file": "unit03.js", "job": "archer", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 4, "file": "unit04.js", "job": "mage", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 5, "file": "unit05.js", "job": "healer", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 6, "file": "unit06.js", "job": "assassin", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 7, "file": "unit07.js", "job": "engineer", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 8, "file": "unit08.js", "job": "lancer", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 9, "file": "unit09.js", "job": "summoner", "initialPosition": { "x": 0, "y": 0 } },
+    { "slot": 10, "file": "unit10.js", "job": "scout", "initialPosition": { "x": 0, "y": 0 } }
   ]
 }

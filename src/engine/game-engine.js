@@ -1,4 +1,4 @@
-import { createInitialState } from "./state.js";
+import { createInitialState } from "./state.js?v=202510252242";
 import { createTurnProcessor } from "./actions.js?v=202510242321";
 import { Renderer } from "../render/renderer.js";
 import { ReplayRecorder } from "../render/replay-recorder.js";
@@ -22,6 +22,7 @@ async function loadSide(side, config) {
     const moduleUrl = new URL(`../teams/${side}/${slot.file}`, import.meta.url);
     moduleUrl.searchParams.set("v", Date.now().toString());
     const mod = await Sandbox.importModule(moduleUrl.href);
+    //console.log("team loaded１:", side, mod);
     slot.initialPosition.x *= orientation;
     team.push({
       slot: slot.slot,
@@ -32,7 +33,7 @@ async function loadSide(side, config) {
       side
     });
   }
-  console.log("team loaded:", side, team);
+  //console.log("team loaded２:", side, team);
   return team;
 }
 
