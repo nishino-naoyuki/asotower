@@ -16,6 +16,7 @@
 | JOBアイコン | `jobs/engineer.png` | 64×64 px | エンジニア表示用 |
 | JOBアイコン | `jobs/summoner.png` | 64×64 px | サモナー表示用 |
 | JOBアイコン | `jobs/scout.png` | 64×64 px | スカウト表示用 |
+| JOBアイコン | `jobs/sumo.png` | 64×64 px | 相撲レスラー表示用 |
 | マップタイル | `map/ground.png` | 64×64 px | 通常地面タイル（タイルセット） |
 | マップタイル | `map/path.png` | 64×64 px | 通路タイル |
 | マップタイル | `map/wall_intact.png` | 64×64 px | 壁（通常） |
