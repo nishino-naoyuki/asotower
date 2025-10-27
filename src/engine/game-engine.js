@@ -38,6 +38,7 @@ async function loadSide(side, config) {
 export function createBattle({ west, east, config, renderer, overlay }) {
   const sandbox = new Sandbox();
 
+  audioManager.playBgmKey("main");
   const state = createInitialState({ west, east, config, sandbox });
   const turnIntervalMs = config.turnIntervalMs ?? 5000;
   let timerId = null;
@@ -82,7 +83,7 @@ export function createBattle({ west, east, config, renderer, overlay }) {
     new Promise((resolve) => requestAnimationFrame(resolve));
 
   async function runTurn() {
-    console.log("runTurn state:", state);
+    //console.log("runTurn state:", state);
     const processor = createTurnProcessor(state, config);
     const unitActionIntervalMs = Math.max(
       0,

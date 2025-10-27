@@ -251,7 +251,6 @@ export class Renderer {
         case "skill":
         case "effect":
         default:
-          this.drawAttackTrace(ctx, effect, progress);
           this.drawStockEffect(ctx, effect, progress);
           break;
       }
@@ -261,8 +260,10 @@ export class Renderer {
   }
 
   drawStockEffect(ctx, effect, progress) {
+    //console.log("drawStockEffect called with params:", ctx, effect, progress);
     const center = toCenterPixels(effect.position);
-    const imageKey = effect.kind === "skill" ? "effect_skill_flash" : "effect_impact";
+    //const imageKey = effect.kind === "skill" ? "effect_skill_flash" : "effect_impact";
+    const imageKey = "effect_skill_flash";
     const sprite = this.getImage(imageKey);
     const baseSize = effect.kind === "skill" ? TILE * 3 : TILE * 2;
     const scale = effect.kind === "skill" ? 1 + 0.25 * Math.sin(progress * Math.PI) : 1 + 0.2 * progress;
@@ -333,9 +334,7 @@ export class Renderer {
 
   drawAttackImpact(ctx, effect, progress) {
     const target = effect.target ? toCenterPixels(effect.target) : toCenterPixels(effect.position);
-    const isSpecial = effect.variant === "special";
-    const sprite = isSpecial ? null : this.getImage("effect_impact");
-    const label = effect.label ?? effect.impactLabel ?? null;
+    const sprite = this.getImage("effect_impact");
     const baseSize = TILE * 2.2;
     const scale = 1 + 0.4 * (1 - Math.abs(Math.cos(progress * Math.PI)));
     const size = baseSize * scale;
@@ -355,16 +354,6 @@ export class Renderer {
       ctx.beginPath();
       ctx.arc(target.x, target.y, radius, 0, Math.PI * 2);
       ctx.fill();
-    }
-    if (isSpecial && label) {
-      ctx.font = "bold 20px 'Noto Sans JP', sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.lineWidth = 6;
-      ctx.strokeStyle = COLORS.attackTraceOutline;
-      ctx.fillStyle = "#fef3c7";
-      ctx.strokeText(label, target.x, target.y - 28);
-      ctx.fillText(label, target.x, target.y - 28);
     }
     ctx.restore();
   }

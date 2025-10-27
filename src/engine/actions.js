@@ -1,4 +1,5 @@
 import { movementPerTurn, computeDamage, isInRange, rangePerTurn } from "./rules.js";
+import { jobsMap } from './jobs/index.js';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -327,36 +328,20 @@ function handleSkill(state, unit, command) {
     return;
   }
 
+  // 対象ユニット取得
   const target =
     command?.targetId !== undefined
       ? state.units.find((u) => u.id === command.targetId)
       : null;
 
-  const skillName = unit.skill?.name ?? "必殺技";
-  const targetLabel = target ? target.id : "周囲";
-
-  unit.skill.used = true;
-  state.log.push({ turn: state.turn, message: `${unit.id} が ${targetLabel} に ${skillName} を使用` });
-
-  if (target) {
-    queueEffect(state, {
-      kind: "attack",
-      position: target.position,
-      sound: "skill",
-      source: unit.position,
-      target: target.position,
-      variant: "special",
-      label: skillName
-    });
+  // ジョブごとのdoSkill呼び出し
+  const skillHandler = jobsMap[unit.job];
+  if (skillHandler && typeof skillHandler.doSkill === 'function') {
+    skillHandler.doSkill(state, unit, target);
+    unit.skill.used = true;
+  } else {
+    state.log.push({ turn: state.turn, message: `${unit.name}のスキルは未実装です` });
   }
-
-  queueEffect(state, {
-    kind: "skill",
-    position: unit.position,
-    durationMs: 900,
-    sound: "skill",
-    label: skillName
-  });
 }
 
 function checkEndCondition(state) {
@@ -377,7 +362,7 @@ function pruneExpiredEffects(state) {
   state.effects = (state.effects ?? []).filter((effect) => now - effect.createdAt < effect.durationMs);
 }
 
-function queueEffect(
+export function queueEffect(
   state,
   {
     kind,

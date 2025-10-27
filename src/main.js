@@ -41,7 +41,8 @@ async function preparePreview() {
     document.getElementById("controls").style.display = "none";
     return;
   }
-  overlay.showMessage("開始ボタンを押してください");
+  document.getElementById("btn-start").disabled = false;
+  overlay.showMessage("準備完了。戦闘開始を押してください。");
 }
 
 async function startBattle() {
@@ -58,10 +59,10 @@ async function startBattle() {
   battle.play();
 }
 
-controls.on("play", () => battle?.play());
-controls.on("pause", () => battle?.pause());
-controls.on("step", () => battle?.step());
-controls.on("speed", (speed) => battle?.setSpeed(speed));
+//controls.on("play", () => battle?.play());
+//controls.on("pause", () => battle?.pause());
+//controls.on("step", () => battle?.step());
+//controls.on("speed", (speed) => battle?.setSpeed(speed));
 controls.on("start", startBattle);
 //controls.on("download-replay", () => battle?.exportReplay());
 //controls.on("load-replay", (file) => battle?.loadReplay(file));
@@ -71,5 +72,5 @@ overlay.bindSelection((unitId) => battle?.selectUnit(unitId));
 
 window.addEventListener("DOMContentLoaded", () => {
   preparePreview().catch((error) => console.error("初期配置の描画に失敗しました:", error));
-  overlay.showMessage("準備完了。戦闘開始を押してください。");
+  //overlay.showMessage("準備完了。戦闘開始を押してください。");
 });
