@@ -41,9 +41,14 @@ export function createInitialState({ west, east, config, sandbox }) {
     }
   }
 
+  // MAP_DATAを複製し、tileSizeを追加
+  const map = JSON.parse(JSON.stringify(MAP_DATA));
+  if (config && config.tileSize) {
+    map.tileSize = config.tileSize;
+  }
   return {
     turn: 0,
-    map: JSON.parse(JSON.stringify(MAP_DATA)),
+    map,
     units,
     log: [],
     effects: [],

@@ -2,6 +2,7 @@
   "maxUnits": 10,
   "turnIntervalMs": 500,
   "unitActionIntervalMs": 1000,
+  "tileSize": 64,
   "west": [
     { "slot": 1, "file": "unit01.js", "job": "guardian", "initialPosition": { "x": 0, "y": 0 } },
     { "slot": 2, "file": "unit02.js", "job": "soldier", "initialPosition": { "x": 0, "y": 0 } },

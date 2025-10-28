@@ -1,10 +1,11 @@
+export function processSkill(state, unit) {}
 
 // アサシン: シャドウステップ（瞬時に2マス移動＋背後200%ダメージ）
 import { queueEffect } from '../actions.js';
+import { computeDamage } from '../rules.js';
 
 export function doSkill(state, unit, target) {
   unit.memory.shadowStep = true;
-  unit.memory.shadowStepPower = 2.0;
   // 背後2マス移動（仮: targetの背後方向）
   if (target) {
     const dx = target.position.x - unit.position.x;
@@ -22,6 +23,9 @@ export function doSkill(state, unit, target) {
       durationMs: 600,
       job: unit.job
     });
+    // 200%ダメージ計算・HP減少（通常攻撃ベース）
+    const damage = Math.floor(computeDamage(unit, target) * 2.0);
+    target.hp = Math.max(0, target.hp - damage);
     queueEffect(state, {
       kind: 'attack',
       position: target.position,
@@ -30,9 +34,9 @@ export function doSkill(state, unit, target) {
       variant: 'critical',
       sound: 'assassin_skill',
       jobSounds: [{ job: 'assassin', kind: 'skill' }],
-      impactLabel: '200%',
+      impactLabel: `${damage}`,
       job: unit.job
     });
-    state.log.push({ turn: state.turn, message: `${unit.name}はシャドウステップ！（背後2マス移動＋200%ダメージ）` });
+    state.log.push({ turn: state.turn, message: `${unit.name}はシャドウステップ！（背後2マス移動＋${damage}ダメージ）` });
   }
 }

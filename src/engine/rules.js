@@ -1,3 +1,19 @@
+// 攻撃可能な敵ユニット一覧を取得（ステルス除外、範囲指定可）
+export function getAttackableEnemies(state, unit, range = null) {
+  return state.units.filter(target => {
+    if (target.side === unit.side) return false;
+    if (target.hp <= 0) return false;
+    if (target.memory?.stealth?.turns > 0) return false;
+    if (range !== null) {
+      // isInRangeで判定（unitの射程をrangeで上書き）
+      const tileSize = state.map?.tileSize || 64;
+      const dx = target.position.x - unit.position.x;
+      const dy = target.position.y - unit.position.y;
+      if (Math.sqrt(dx * dx + dy * dy) > range) return false;
+    }
+    return true;
+  });
+}
 import { JOB_DATA } from "../data/jobs.js?v=202510231119";
 
 export function computeDamage(attacker, defender) {
@@ -33,7 +49,9 @@ export function movementPerTurn(unit) {
 }
 
 export function isInRange(attacker, target) {
-  const range = rangePerTurn(attacker);
+  // タイル数→ピクセル距離に変換
+  const tileSize = attacker.state?.map?.tileSize || 64;
+  const range = rangePerTurn(attacker) * tileSize;
   const dx = target.position.x - attacker.position.x;
   const dy = target.position.y - attacker.position.y;
   const dist = Math.hypot(dx, dy);
@@ -41,5 +59,6 @@ export function isInRange(attacker, target) {
 }
 
 export function rangePerTurn(unit) {
+  // タイル数で返す（ピクセル換算はisInRange側で行う）
   return unit.stats.range / 10;
 }

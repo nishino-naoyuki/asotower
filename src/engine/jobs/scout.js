@@ -1,3 +1,4 @@
+export function processSkill(state, unit) {}
 
 // スカウト: リコンパルス（10秒ステルス＋範囲敵情報共有）
 import { queueEffect } from '../actions.js';

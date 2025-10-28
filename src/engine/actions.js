@@ -1,10 +1,18 @@
-import { movementPerTurn, computeDamage, isInRange, rangePerTurn } from "./rules.js";
+// getAttackableEnemiesはrules.jsからimport
+import { movementPerTurn, computeDamage, isInRange, rangePerTurn, getAttackableEnemies } from "./rules.js";
 import { jobsMap } from './jobs/index.js';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function createTurnProcessor(state, config = {}) {
   pruneExpiredEffects(state);
+  // 各ユニットのprocessSkillを毎ターン呼び出し
+  for (const unit of state.units) {
+    const jobHandler = jobsMap[unit.job];
+    if (jobHandler && typeof jobHandler.processSkill === 'function') {
+      jobHandler.processSkill(state, unit);
+    }
+  }
   const turnOrder = [...state.units].sort((a, b) => {
     const speedDiff = b.stats.speed - a.stats.speed;
     return speedDiff !== 0 ? speedDiff : a.slot - b.slot;
@@ -68,7 +76,7 @@ function createStateView(state, unit) {
   return {
     self: unit,
     allies: state.units.filter((u) => u.side === unit.side && u.id !== unit.id && u.hp > 0),
-    enemies: state.units.filter((u) => u.side !== unit.side && u.hp > 0),
+  enemies: getAttackableEnemies(state, unit),
     map: state.map,
     turn: state.turn,
     log: state.log,
@@ -123,7 +131,8 @@ function createApi() {
         return step;
       },
       closestEnemy(view) {
-        return this.findClosest(view.enemies ?? [], view.self.position);
+  // view.enemiesは既にgetAttackableEnemies経由だが、念のため直接取得も可能
+  return this.findClosest(getAttackableEnemies(view.state, view.self), view.self.position);
       },
       closestAlly(view) {
         return this.findClosest(view.allies ?? [], view.self.position);

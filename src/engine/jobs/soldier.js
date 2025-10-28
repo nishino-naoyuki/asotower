@@ -1,3 +1,4 @@
+export function processSkill(state, unit) {}
 
 // ソルジャー: ブレイブチャージ（前方3マス突進＋10秒攻撃+15%）
 import { queueEffect } from '../actions.js';

@@ -68,6 +68,7 @@ export class Renderer {
     this.drawWalls(ctx, map.walls);
     this.drawCastles(ctx, map.castles);
     this.drawUnits(ctx, state?.units ?? []);
+    this.drawMageFire(ctx, state); // magefire描画
     this.drawEffects(ctx, state?.effects ?? []);
     if (state?.status?.finished) {
       this.drawVictory(ctx, state.status.winner);
@@ -75,6 +76,32 @@ export class Renderer {
     ctx.restore();
 
     this.drawOverlay(ctx, state);
+  }
+
+  drawMageFire(ctx, state) {
+    // magefire画像を描画
+    const magefireImg = this.getImage("map_magefire");
+    if (!magefireImg) return;
+    const tileSize = state.map.tileSize || TILE;
+    state.units.forEach(unit => {
+      if (unit.job !== "mage" || !unit.memory?.mageDot || unit.hp <= 0) return;
+      // mage.positionを中心に2マス範囲
+      const center = unit.position;
+      const range = 2;
+      for (let dx = -range; dx <= range; dx++) {
+        for (let dy = -range; dy <= range; dy++) {
+          // 円形範囲のみ
+          if (Math.sqrt(dx * dx + dy * dy) > range) continue;
+          const tx = center.x + dx;
+          const ty = center.y + dy;
+          // マップ外は描画しない
+          if (tx < 0 || ty < 0 || tx >= state.map.width || ty >= state.map.height) continue;
+          const px = tx * tileSize;
+          const py = ty * tileSize;
+          ctx.drawImage(magefireImg, px, py, tileSize, tileSize);
+        }
+      }
+    });
   }
 
   drawBackground(ctx, map) {
@@ -248,15 +275,33 @@ export class Renderer {
         case "impactRing":
           this.drawImpactRing(ctx, effect, progress);
           break;
+        case "heal_special":
+          this.drawHealSpecialEffect(ctx, effect, progress);
+          break;
         case "skill":
         case "effect":
         default:
           this.drawStockEffect(ctx, effect, progress);
           break;
       }
-
       ctx.restore();
     });
+  }
+
+  drawHealSpecialEffect(ctx, effect, progress) {
+    // 白い光で包むエフェクト（淡い白円オーバーレイ、フェードイン→アウト）
+    const center = toCenterPixels(effect.position);
+    const maxRadius = TILE * 1.2;
+    const radius = maxRadius * (0.7 + 0.3 * Math.sin(progress * Math.PI));
+    ctx.save();
+    ctx.globalAlpha *= 0.45 * (1 - Math.abs(progress - 0.5) * 2); // 中央で最大、両端で0
+    ctx.beginPath();
+    ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = "white";
+    ctx.shadowColor = "#f8fafc";
+    ctx.shadowBlur = 18;
+    ctx.fill();
+    ctx.restore();
   }
 
   drawStockEffect(ctx, effect, progress) {

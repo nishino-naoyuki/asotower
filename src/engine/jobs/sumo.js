@@ -1,3 +1,4 @@
+export function processSkill(state, unit) {}
 
 // 相撲レスラー: 土俵轟砕（半径1.5マス体当たり・250%攻撃＋ノックバック2マス・8秒間被ダメ-30%）
 import { queueEffect } from '../actions.js';

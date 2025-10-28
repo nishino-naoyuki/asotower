@@ -1,3 +1,4 @@
+export function processSkill(state, unit) {}
 
 // サモナー: ミニオンコール（HP40攻撃10のミニオン3体を20秒間召喚）
 import { queueEffect } from '../actions.js';
