@@ -1,7 +1,7 @@
 
 // メイジ: エレメンタルバースト（半径2マスに5秒間継続ダメージ 総計250%）
 import { queueEffect } from '../actions.js';
-import { computeDamage } from '../rules.js';
+import { computeDamage,getAttackableEnemies } from '../rules.js';
 export function processSkill(state, unit) {
   // 継続ダメージ処理
   if (unit.memory.mageDot && unit.memory.mageDot.turns > 0) {

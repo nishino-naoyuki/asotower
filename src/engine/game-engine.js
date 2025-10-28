@@ -3,6 +3,7 @@ import { createTurnProcessor } from "./actions.js?v=202510261659";
 import { Sandbox } from "../sdk/sandbox.js";
 import { loadConfig } from "../sdk/api.js?v=202510242340";
 import { audioManager } from "../render/audio-manager.js?v=202510231450";
+import { computeDamage,getAttackableEnemies } from '../rules.js';
 
 export async function loadTeams() {
   const config = await loadConfig();
