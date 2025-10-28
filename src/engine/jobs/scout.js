@@ -12,7 +12,8 @@ export function doSkill(state, unit, target) {
     variant: 'stealth',
     sound: 'scout_skill',
     jobSounds: [{ job: 'scout', kind: 'skill' }],
-    durationMs: 800
+    durationMs: 800,
+    job: unit.job
   });
   state.log.push({ turn: state.turn, message: `${unit.name}はリコンパルス！（10秒ステルス＋範囲敵情報共有）` });
 }

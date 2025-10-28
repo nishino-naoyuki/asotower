@@ -13,7 +13,8 @@ export function doSkill(state, unit, target) {
     variant: 'fortress',
     sound: 'guardian_skill',
     jobSounds: [{ job: 'guardian', kind: 'skill' }],
-    durationMs: 800
+    durationMs: 800,
+    job: unit.job
   });
   state.log.push({ turn: state.turn, message: `${unit.name}はフォートレス！（8秒間被ダメ-40%＋ヘイト上昇）` });
 }

@@ -10,7 +10,7 @@ export function createTurnProcessor(state, config = {}) {
     return speedDiff !== 0 ? speedDiff : a.slot - b.slot;
   });
 
-  state.log = [];
+  //state.log = [];
 
   let index = 0;
 
@@ -173,7 +173,7 @@ function executeCommand(state, unit, command) {
       handleSkill(state, unit, command);
       break;
     default:
-      state.log.push({ turn: state.turn, message: `${unit.id} のコマンド不明` });
+      state.log.push({ turn: state.turn, message: `${unit.name} のコマンド不明` });
   }
 }
 
@@ -202,13 +202,13 @@ function handleMove(state, unit, command) {
   const enteringNewCell = currentCell.x !== targetCell.x || currentCell.y !== targetCell.y;
 
   if (enteringNewCell && isOccupiedCell(state, adjusted, unit)) {
-    state.log.push({ turn: state.turn, message: `${unit.id} は混雑して進めなかった` });
+    state.log.push({ turn: state.turn, message: `${unit.name} は混雑して進めなかった` });
     return;
   }
   unit.position.x = adjusted.x;
   unit.position.y = adjusted.y;
 
-  state.log.push({ turn: state.turn, message: `${unit.id} が移動` });
+  state.log.push({ turn: state.turn, message: `${unit.name} が移動` });
 }
 
 function adjustForWalls(map, from, to) {
@@ -254,13 +254,13 @@ function handleAttack(state, unit, command) {
   if (!target || target.hp <= 0) return;
 
   if (!isInRange(unit, target)) {
-    state.log.push({ turn: state.turn, message: `${unit.id} の攻撃は届かなかった` });
+    state.log.push({ turn: state.turn, message: `${unit.name} の攻撃は届かなかった` });
     return;
   }
 
   const damage = computeDamage(unit, target);
   target.hp = Math.max(0, target.hp - damage);
-  state.log.push({ turn: state.turn, message: `${unit.id} が ${target.id} に ${damage} ダメージ` });
+  state.log.push({ turn: state.turn, message: `${unit.name} が ${target.name} に ${damage} ダメージ` });
   const jobSounds = [];
   if (damage > 0 && target.job) {
     jobSounds.push({ job: target.job, kind: "hit" });
@@ -276,7 +276,8 @@ function handleAttack(state, unit, command) {
     source: unit.position,
     target: target.position,
     variant: distanceBetween(unit.position, target.position) <= 1.5 ? "melee" : "ranged",
-    impactLabel: `${damage}`
+    impactLabel: `${damage}`,
+    job: unit.job // 攻撃者のジョブ名を追加
   });
 
   queueEffect(state, {
@@ -295,7 +296,7 @@ function handleAttackCastle(state, unit) {
 
   const distance = Math.hypot(castlePos.x - unit.position.x, castlePos.y - unit.position.y);
   if (distance > rangePerTurn(unit)) {
-    state.log.push({ turn: state.turn, message: `${unit.id} の攻撃は城に届かなかった` });
+    state.log.push({ turn: state.turn, message: `${unit.name} の攻撃は城に届かなかった` });
     return;
   }
 
@@ -303,7 +304,7 @@ function handleAttackCastle(state, unit) {
   const dummyCastle = { stats: { defense: castleDefense }, job: "castle" };
   const damage = Math.max(1, computeDamage(unit, dummyCastle));
   castles[hpKey] = Math.max(0, (castles[hpKey] ?? 0) - damage);
-  state.log.push({ turn: state.turn, message: `${unit.id} が敵城に ${damage} ダメージ` });
+  state.log.push({ turn: state.turn, message: `${unit.name} が敵城に ${damage} ダメージ` });
   queueEffect(state, {
     kind: "attack",
     position: castlePos,
@@ -320,11 +321,11 @@ function handleAttackCastle(state, unit) {
 
 function handleSkill(state, unit, command) {
   if (!unit.skill) {
-    state.log.push({ turn: state.turn, message: `${unit.id} には使用可能なスキルがない` });
+    state.log.push({ turn: state.turn, message: `${unit.name} には使用可能なスキルがない` });
     return;
   }
   if (unit.skill.used) {
-    state.log.push({ turn: state.turn, message: `${unit.id} のスキルは既に使用済み` });
+    state.log.push({ turn: state.turn, message: `${unit.name} のスキルは既に使用済み` });
     return;
   }
 
@@ -375,7 +376,8 @@ export function queueEffect(
     variant = null,
     label = null,
     traceLabel = null,
-    impactLabel = null
+    impactLabel = null,
+    job = null
   }
 ) {
   const now = Date.now();
@@ -396,6 +398,7 @@ export function queueEffect(
     ...(label ? { label } : {}),
     ...(traceLabel ? { traceLabel } : {}),
     ...(impactLabel ? { impactLabel } : {}),
+    ...(job ? { job } : {}),
     played: false
   });
 }

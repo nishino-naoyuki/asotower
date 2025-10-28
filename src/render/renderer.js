@@ -262,13 +262,24 @@ export class Renderer {
   drawStockEffect(ctx, effect, progress) {
     //console.log("drawStockEffect called with params:", ctx, effect, progress);
     const center = toCenterPixels(effect.position);
-    //const imageKey = effect.kind === "skill" ? "effect_skill_flash" : "effect_impact";
-    const imageKey = "effect_skill_flash";
+    let imageKey = "effect_skill_flash";
+    // ジョブごとのスキル画像
+    if (effect.kind === "skill" && effect.job) {
+      imageKey = `job_${effect.job}_skill`;
+      const jobSprite = this.getImage(imageKey);
+      if (jobSprite) {
+        const baseSize = TILE * 3;
+        const scale = 1 + 0.25 * Math.sin(progress * Math.PI);
+        const size = baseSize * scale;
+        ctx.drawImage(jobSprite, center.x - size / 2, center.y - size / 2, size, size);
+        return;
+      }
+    }
+    // 通常スキル画像
     const sprite = this.getImage(imageKey);
     const baseSize = effect.kind === "skill" ? TILE * 3 : TILE * 2;
     const scale = effect.kind === "skill" ? 1 + 0.25 * Math.sin(progress * Math.PI) : 1 + 0.2 * progress;
     const size = baseSize * scale;
-
     if (sprite) {
       ctx.drawImage(sprite, center.x - size / 2, center.y - size / 2, size, size);
     } else {
@@ -334,12 +345,32 @@ export class Renderer {
 
   drawAttackImpact(ctx, effect, progress) {
     const target = effect.target ? toCenterPixels(effect.target) : toCenterPixels(effect.position);
-    const sprite = this.getImage("effect_impact");
+    const source = effect.source ? toCenterPixels(effect.source) : toCenterPixels(effect.position);
+    let imageKey = "effect_impact";
+    // ジョブごとの攻撃画像
+    console.log("drawAttackImpact effect.job:", effect.job);
+    if (effect.job) {
+      imageKey = `job_${effect.job}_attack`;
+      const jobSprite = this.getImage(imageKey);
+      console.log("jobSprite:", jobSprite,imageKey);
+      if (jobSprite) {
+        const baseSize = TILE * 2.2;
+        const scale = 1 + 0.4 * (1 - Math.abs(Math.cos(progress * Math.PI)));
+        const size = baseSize * scale;
+        const alpha = 1 - progress;
+        ctx.save();
+        ctx.globalAlpha *= alpha;
+        ctx.drawImage(jobSprite, source.x - size / 2, source.y - size / 2, size, size);
+        ctx.restore();
+        return;
+      }
+    }
+    // 通常攻撃画像
+    const sprite = this.getImage(imageKey);
     const baseSize = TILE * 2.2;
     const scale = 1 + 0.4 * (1 - Math.abs(Math.cos(progress * Math.PI)));
     const size = baseSize * scale;
     const alpha = 1 - progress;
-
     ctx.save();
     ctx.globalAlpha *= alpha;
     if (sprite) {
@@ -360,7 +391,7 @@ export class Renderer {
 
   drawVictory(ctx, winner) {
     if (!winner) return;
-      const message = winner === "引き分け" ? "引き分け!!" : `${winner}勝利!!`;
+    const message = winner === "引き分け" ? "引き分け!!" : `${winner}勝利!!`;
     const mapWidth = this.canvas.width;
     const mapHeight = this.canvas.height - OVERLAY_HEIGHT;
     const centerX = mapWidth / 2;
@@ -374,6 +405,24 @@ export class Renderer {
     const bannerWidth = mapWidth * 0.72;
     const bannerHeight = fontSize * 1.4;
     ctx.fillRect(centerX - bannerWidth / 2, centerY - bannerHeight / 2, bannerWidth, bannerHeight);
+
+    // 勝利側ユニット画像（job名_win）をバナーの後ろに横並びで表示
+    if (winner === "東軍" || winner === "西軍") {
+      const winSide = winner === "東軍" ? "east" : "west";
+      const winUnits = this.lastUnits?.filter(u => u.side === winSide && u.hp > 0) ?? [];
+      const imgSize = Math.floor(fontSize * 1.2);
+      const totalWidth = winUnits.length * imgSize + Math.max(0, winUnits.length - 1) * 12;
+      let startX = centerX - totalWidth / 2;
+      winUnits.forEach((unit, i) => {
+        const imgKey = `job_${unit.job}_win`;
+        const sprite = this.getImage(imgKey);
+        if (sprite) {
+          ctx.globalAlpha = 0.7;
+          ctx.drawImage(sprite, startX + i * (imgSize + 12), centerY - imgSize / 2 - fontSize, imgSize, imgSize);
+          ctx.globalAlpha = 0.9;
+        }
+      });
+    }
 
     ctx.globalAlpha = 1;
     ctx.textAlign = "center";

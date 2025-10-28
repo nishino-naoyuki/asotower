@@ -19,7 +19,8 @@ export function doSkill(state, unit, target) {
       variant: 'shadowStep',
       sound: 'assassin_skill',
       jobSounds: [{ job: 'assassin', kind: 'skill' }],
-      durationMs: 600
+      durationMs: 600,
+      job: unit.job
     });
     queueEffect(state, {
       kind: 'attack',
@@ -29,7 +30,8 @@ export function doSkill(state, unit, target) {
       variant: 'critical',
       sound: 'assassin_skill',
       jobSounds: [{ job: 'assassin', kind: 'skill' }],
-      impactLabel: '200%'
+      impactLabel: '200%',
+      job: unit.job
     });
     state.log.push({ turn: state.turn, message: `${unit.name}はシャドウステップ！（背後2マス移動＋200%ダメージ）` });
   }

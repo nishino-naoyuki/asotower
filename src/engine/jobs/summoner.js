@@ -12,7 +12,8 @@ export function doSkill(state, unit, target) {
       variant: 'minion',
       sound: 'summoner_skill',
       jobSounds: [{ job: 'summoner', kind: 'skill' }],
-      durationMs: 1200
+      durationMs: 1200,
+      job: unit.job
     });
     state.log.push({ turn: state.turn, message: `${unit.name}はミニオンコール！（HP40攻撃10のミニオン3体・20秒間）` });
   }

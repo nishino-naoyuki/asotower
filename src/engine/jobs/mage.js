@@ -15,7 +15,8 @@ export function doSkill(state, unit, targets) {
       variant: 'magic',
       sound: 'mage_skill',
       jobSounds: [{ job: 'mage', kind: 'skill' }],
-      impactLabel: 'DoT'
+      impactLabel: 'DoT',
+      job: unit.job
     });
   });
   queueEffect(state, {
@@ -25,7 +26,8 @@ export function doSkill(state, unit, targets) {
     variant: 'elementalBurst',
     sound: 'mage_skill',
     jobSounds: [{ job: 'mage', kind: 'skill' }],
-    durationMs: 1200
+    durationMs: 1200,
+    job: unit.job
   });
   state.log.push({ turn: state.turn, message: `${unit.name}はエレメンタルバースト！（半径2マス・5秒継続ダメージ）` });
 }

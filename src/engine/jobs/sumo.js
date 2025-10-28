@@ -18,7 +18,8 @@ export function doSkill(state, unit, targets) {
       variant: 'bodySlam',
       sound: 'sumo_skill',
       jobSounds: [{ job: 'sumo', kind: 'skill' }],
-      impactLabel: '250%'
+      impactLabel: '250%',
+      job: unit.job
     });
   });
   queueEffect(state, {
@@ -28,7 +29,8 @@ export function doSkill(state, unit, targets) {
     variant: 'sumoGuard',
     sound: 'sumo_skill',
     jobSounds: [{ job: 'sumo', kind: 'skill' }],
-    durationMs: 800
+    durationMs: 800,
+    job: unit.job
   });
   state.log.push({ turn: state.turn, message: `${unit.name}は土俵轟砕！（半径1.5マス体当たり・250%攻撃＋ノックバック2マス・8秒間被ダメ-30%）` });
 }

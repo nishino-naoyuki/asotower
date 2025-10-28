@@ -14,7 +14,8 @@ export function doSkill(state, unit, target) {
       variant: 'medica',
       sound: 'healer_skill',
       jobSounds: [{ job: 'healer', kind: 'skill' }],
-      impactLabel: '+150'
+      impactLabel: '+150',
+      job: unit.job
     });
     state.log.push({ turn: state.turn, message: `${unit.name}は${target.name}をメディカ！（150回復＋弱体解除）` });
   }

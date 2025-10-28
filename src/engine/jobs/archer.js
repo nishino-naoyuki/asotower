@@ -18,7 +18,8 @@ export function doSkill(state, unit, targets) {
     variant: 'multiShot',
     sound: 'archer_skill',
     jobSounds: [{ job: 'archer', kind: 'skill' }],
-    durationMs: 800
+    durationMs: 800,
+    job: unit.job
   });
   state.log.push({ turn: state.turn, message: `${unit.name}はマルチショットを放った！（3体・各70%威力）` });
 }

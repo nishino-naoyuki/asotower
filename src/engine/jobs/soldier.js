@@ -17,7 +17,8 @@ export function doSkill(state, unit, target) {
     variant: 'charge',
     sound: 'soldier_skill',
     jobSounds: [{ job: 'soldier', kind: 'skill' }],
-    durationMs: 800
+    durationMs: 800,
+    job: unit.job
   });
   state.log.push({ turn: state.turn, message: `${unit.name}はブレイブチャージ！（前方3マス突進＋10秒攻撃+15%）` });
 }
