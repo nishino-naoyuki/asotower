@@ -210,8 +210,23 @@ export class Renderer {
   drawUnits(ctx, units) {
     units.forEach((unit) => {
       if (unit.hp <= 0) return;
+      ctx.save();
+      // ステルス状態なら半透明
+      if (unit.memory?.stealth?.turns > 0) {
+        ctx.globalAlpha = 0.5;
+      }
       const center = toCenterPixels(unit.position);
-      const jobSprite = this.getImage(`job_${unit.job}`);
+      let jobSprite;
+      if (unit.job === 'monster') {
+        // 攻撃中フラグ（isAttacking）で画像切り替え
+        if (unit.memory?.isAttacking) {
+          jobSprite = this.getImage('job_monster_attack');
+        } else {
+          jobSprite = this.getImage('job_monster');
+        }
+      } else {
+        jobSprite = this.getImage(`job_${unit.job}`);
+      }
       const unitColor = unit.side === "west" ? COLORS.unitWest : COLORS.unitEast;
       ctx.fillStyle = unitColor;
       ctx.beginPath();
@@ -248,6 +263,7 @@ export class Renderer {
       ctx.fillText(label, center.x, center.y - 22);
       ctx.textAlign = "start";
       ctx.textBaseline = "alphabetic";
+      ctx.restore();
     });
   }
 

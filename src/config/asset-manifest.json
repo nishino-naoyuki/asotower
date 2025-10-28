@@ -36,6 +36,10 @@
     "skill_icon": "ui/skill_icon.png"
   },
   "jobs": {
+    "monster": {
+      "default": "jobs/monster.png",
+      "attack": "jobs/monster_attack.png"
+    },
     "soldier": {
       "default": "jobs/soldier.png",
       "attack": "jobs/soldier_attack.png",
