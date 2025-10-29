@@ -413,14 +413,16 @@ export class Renderer {
     if (effect.job) {
       imageKey = `job_${effect.job}_attack`;
       const jobSprite = this.getImage(imageKey);
-      console.log("jobSprite:", jobSprite,imageKey);
+      // 表示時間を長く・はっきりさせるためalphaとscaleを調整
       if (jobSprite) {
         const baseSize = TILE * 2.2;
-        const scale = 1 + 0.4 * (1 - Math.abs(Math.cos(progress * Math.PI)));
+        // scale変化を緩やかに
+        const scale = 1 + 0.25 * (1 - Math.abs(Math.cos(progress * Math.PI)));
         const size = baseSize * scale;
-        const alpha = 1 - progress;
+        // alpha減衰を遅く
+        const alpha = 1 - progress * 0.5;
         ctx.save();
-        ctx.globalAlpha *= alpha;
+        ctx.globalAlpha *= Math.max(0.4, alpha); // 最低0.4は残す
         ctx.drawImage(jobSprite, source.x - size / 2, source.y - size / 2, size, size);
         ctx.restore();
         return;

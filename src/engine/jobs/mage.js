@@ -3,6 +3,14 @@
 import { queueEffect } from '../actions.js';
 import { computeDamage,getAttackableEnemies } from '../rules.js';
 export function processSkill(state, unit) {
+  if (unit.hp <= 0) {
+    if (unit.memory.mageDot) {
+      unit.memory.mageDot.turns = 0;
+      delete unit.memory.mageDot;
+      state.log.push({ turn: state.turn, message: `${unit.name}のエレメンタルバースト効果が死亡により即時終了。` });
+    }
+    return;
+  }
   // 継続ダメージ処理
   if (unit.memory.mageDot && unit.memory.mageDot.turns > 0) {
     // 毎ターン、mageDot.positionを最新のunit.positionに更新（magefireが移動に追従）

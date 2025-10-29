@@ -1,9 +1,20 @@
 export function processSkill(state, unit) {
+  if (unit.hp <= 0) return;
   // soldierBuffのターン管理と解除
+  if (unit.hp <= 0) {
+    if (unit.memory.soldierBuff) {
+      unit.memory.soldierBuff.turns = 0;
+      if (unit.memory.soldierBuff.originalAttack !== undefined) {
+        unit.stats.attack = unit.memory.soldierBuff.originalAttack;
+      }
+      delete unit.memory.soldierBuff;
+      state.log.push({ turn: state.turn, message: `${unit.name}の攻撃力強化効果が死亡により即時終了。` });
+    }
+    return;
+  }
   if (unit.memory.soldierBuff && unit.memory.soldierBuff.turns > 0) {
     unit.memory.soldierBuff.turns--;
     if (unit.memory.soldierBuff.turns <= 0) {
-      // 元の攻撃力に戻す
       if (unit.memory.soldierBuff.originalAttack !== undefined) {
         unit.stats.attack = unit.memory.soldierBuff.originalAttack;
       }

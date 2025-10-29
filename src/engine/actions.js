@@ -286,7 +286,8 @@ function handleAttack(state, unit, command) {
     target: target.position,
     variant: distanceBetween(unit.position, target.position) <= 1.5 ? "melee" : "ranged",
     impactLabel: `${damage}`,
-    job: unit.job // 攻撃者のジョブ名を追加
+    job: unit.job, // 攻撃者のジョブ名を追加
+    durationMs: 3000
   });
 
   queueEffect(state, {

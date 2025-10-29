@@ -1,4 +1,12 @@
 export function processSkill(state, unit) {
+  if (unit.hp <= 0) {
+    if (unit.memory.stealth) {
+      unit.memory.stealth.turns = 0;
+      delete unit.memory.stealth;
+      state.log.push({ turn: state.turn, message: `${unit.name}のステルス効果が死亡により即時終了。` });
+    }
+    return;
+  }
   // ステルス状態のターン管理と解除
   if (unit.memory.stealth && unit.memory.stealth.turns > 0) {
     unit.memory.stealth.turns--;

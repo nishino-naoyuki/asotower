@@ -39,6 +39,14 @@ export function doSkill(state, unit, target) {
   state.log.push({ turn: state.turn, message: `${unit.name}はチャンピオンを召喚！（5ターン限定・HP15攻撃35）` });
 }
 export function processSkill(state, unit) {
+  if (unit.hp <= 0) {
+    // サモナー自身の死亡時は召喚効果を即時終了
+    if (unit.memory.summonedChampion) {
+      delete unit.memory.summonedChampion;
+      state.log.push({ turn: state.turn, message: `${unit.name}の召喚効果が死亡により即時終了。` });
+    }
+    return;
+  }
   // チャンピオン消滅・AI攻撃処理
   for (const u of state.units) {
     if (u.job === 'monster' && u.memory?.summonedChampion) {
