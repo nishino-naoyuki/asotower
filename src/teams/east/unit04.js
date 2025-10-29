@@ -4,10 +4,11 @@ export function init() {
     name: "近藤",
     initialPosition: {
       relativeTo: "allyCastle",
-      x: 5,
+      x: 1,
       y: 3
     },
-    memory: {}
+    memory: {},
+    bonus: { atk: 3, def: 2, spd: 2, hit: 2, hp: 1 }, // 合計10
   };
 }
 

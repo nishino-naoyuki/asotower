@@ -7,7 +7,8 @@ export function init() {
       x: 7,
       y: -3
     },
-    memory: { focusId: null }
+    memory: {},
+    bonus: { atk: 3, def: 2, spd: 2, hit: 2, hp: 1 }, // 合計10
   };
 }
 

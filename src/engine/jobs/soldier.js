@@ -24,7 +24,7 @@ export function processSkill(state, unit) {
   }
 }
 
-// ソルジャー: ブレイブチャージ（前方3マス突進＋10秒攻撃+15%）
+// ソルジャー: ブレイブチャージ
 import { queueEffect } from '../actions.js';
 
 export function doSkill(state, unit, target) {

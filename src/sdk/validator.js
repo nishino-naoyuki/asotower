@@ -17,14 +17,21 @@ export function validateTeams(west, east, config) {
 
   for (const unit of allUnits) {
     if (!JOB_DATA[unit.job]) {
-      errors.push(`${unit.side}の${unit.file} のJOB ${unit.job} は未定義です。`);
+      errors.push(`${unit.side}の${unit.name ?? unit.file} のJOB ${unit.job} は未定義です。`);
     }
     const initContext = buildInitContext(unit.side);
     const initResult = unit.module.init?.(initContext) ?? {};
     const job = initResult.job ?? unit.job;
+    // ボーナス合計値チェック
+    const bonus = initResult.bonus ?? {};
+    const bonusSum = Object.values(bonus).reduce((a, b) => a + (b ?? 0), 0);
+    if (bonusSum > 10) {
+      errors.push(`${unit.side}の${unit.name ?? unit.file} のボーナス合計が10を超えています（${bonusSum}）。失格扱いとなります。`);
+      unit.hp = 0;
+    }
     if (!JOB_DATA[job]) {
-      console.log(`${unit.side}の${unit.id ?? unit.file} のinitが不正なJOBを返しました。${job} は未定義です。`);
-      errors.push(`${unit.side}の${unit.id ?? unit.file} のinitが不正なJOBを返しました。${job} は未定義です。`);
+      console.log(`${unit.side}の${unit.name ?? unit.id ?? unit.file} のinitが不正なJOBを返しました。${job} は未定義です。`);
+      errors.push(`${unit.side}の${unit.name ?? unit.id ?? unit.file} のinitが不正なJOBを返しました。${job} は未定義です。`);
     }
     const resolvedPosition = resolveUnitPosition(initResult.initialPosition, unit.initialPosition, unit.side);
     const validX =
@@ -34,8 +41,8 @@ export function validateTeams(west, east, config) {
     if (!validX) {
       console.log("invalid position for unit:", unit, resolvedPosition);
       unit.side === "west"
-        ? errors.push(`${unit.side} の${unit.file} の初期位置が陣地範囲外(x=${MAP_DATA.castles.west.x + resolvedPosition.x})です。${HALF_MAP_WIDTH-MAP_DATA.castles.west.x}より小さい値である必要があります。`)
-        : errors.push(`${unit.side} の${unit.file} の初期位置が陣地範囲外(x=${MAP_DATA.castles.east.x - resolvedPosition.x})です。${MAP_DATA.castles.east.x-HALF_MAP_WIDTH}より小さい値である必要があります。`)
+        ? errors.push(`${unit.side} の${unit.name ?? unit.file} の初期位置が陣地範囲外(x=${MAP_DATA.castles.west.x + resolvedPosition.x})です。${HALF_MAP_WIDTH-MAP_DATA.castles.west.x}より小さい値である必要があります。`)
+        : errors.push(`${unit.side} の${unit.name ?? unit.file} の初期位置が陣地範囲外(x=${MAP_DATA.castles.east.x - resolvedPosition.x})です。${MAP_DATA.castles.east.x-HALF_MAP_WIDTH}より小さい値である必要があります。`)
     }
     console.log("resolvedPosition:", resolvedPosition);
   }

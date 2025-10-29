@@ -4,10 +4,11 @@ export function init() {
     name: "柳町",
     initialPosition: {
       relativeTo: "allyCastle",
-      x: 10,
-      y: 5
+      x: 3,
+      y: -2
     },
-    memory: { focusId: null }
+    memory: {},
+    bonus: { atk: 3, def: 2, spd: 2, hit: 2, hp: 1 }, // 合計10
   };
 }
 

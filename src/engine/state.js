@@ -19,21 +19,26 @@ export function createInitialState({ west, east, config, sandbox }) {
       const initResult = module.init?.(initContext) || {};
       const jobKey = initResult.job ?? info.job;
       const job = JOB_DATA[jobKey];
-      //console.log("module, initResult, jobKey, job:", module, initResult, jobKey, job);
       const pos = resolveUnitPosition(initResult.initialPosition, info.initialPosition, side);
       const rawName = typeof initResult.name === "string" ? initResult.name.trim() : "";
       const fallbackName = typeof jobKey === "string" && jobKey.length ? jobKey : `${side}-${info.slot}`;
       const unitName = rawName || fallbackName;
+      // ボーナス加算
+      const bonus = initResult.bonus ?? {};
+      const stats = { ...job.stats };
+      for (const key of ["hp", "attack", "defense", "speed", "range", "vision"]) {
+        stats[key] = (stats[key] ?? 0) + (bonus[key] ?? 0);
+      }
       units.push({
         id: `${side}-${info.slot}`,
         side,
         slot: info.slot,
         job: jobKey,
         name: unitName,
-        stats: { ...job.stats },
+        stats,
         skill: { ...job.skill, used: false },
         position: { ...pos },
-        hp: job.stats.hp,
+        hp: stats.hp,
         memory: initResult.memory ?? {},
         module,
         sandbox

@@ -7,7 +7,8 @@ export function init() {
       x: 9,
       y: 2
     },
-    memory: { burstTurn: -1 }
+    memory: {},
+    bonus: { atk: 3, def: 2, spd: 2, hit: 2, hp: 1 }, // 合計10
   };
 }
 
