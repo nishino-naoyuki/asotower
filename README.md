@@ -1,3 +1,5 @@
+
+
 # asotower
 
 ## 目次
@@ -8,78 +10,93 @@
 - [各仕様書へのリンク](#各仕様書へのリンク)
 
 ## このプログラムが何のプログラムかの概要
-ブラウザ上で動作する純ES Modules構成の対戦型タワーディフェンスゲームです。運営が両陣営のユニットスクリプトと設定ファイルを用意すると、ブラウザから戦闘を起動してリプレイを観戦できます。学生は与えられたSDKを用いて自チームのユニットAIを作成し、対戦形式で競い合います。
+純ES Modules・ブラウザ実行型の対戦型タワーディフェンスゲーム。運営は両陣営のユニットAIと設定ファイルを用意し、学生はSDK/APIを使って自チームのAIファイルを作成・提出。ブラウザ上で戦闘・リプレイ観戦が可能。
 
 ## プログラムの実行方法
-### 方法A: Pythonの簡易サーバーを使う
-1. リポジトリのルートで静的サーバーを起動します。
+### 方法A: Python簡易サーバー
+1. リポジトリ直下で以下を実行：
 	 ```bash
 	 python3 -m http.server --directory src 8000
 	 ```
-2. Codespaces やローカルPCから `http://localhost:8000`（Codespacesは転送URL）へアクセスします。
-3. ブラウザ上のUIからチーム編成を確認し、「戦闘開始」を押して試合を開始します。
+2. `http://localhost:8000`（Codespacesは転送URL）へアクセス。
+3. UIでチーム編成を確認し「戦闘開始」を押す。
 
-### 方法B: VS Code の Live Server 拡張機能を使う
-1. VS Code で本リポジトリの `asotower` フォルダを開きます。
-2. 拡張機能「Live Server」（Ritwick Dey 作）をインストールします。
-3. エクスプローラーで `src/index.html` を右クリックし、**Open with Live Server** を選択します。
-4. Live Server が自動でブラウザを開かない場合は、手動で `http://127.0.0.1:5500/src/index.html` へアクセスしてください。
-5. 表示された画面で「戦闘開始」を押して試合を開始します。
+### 方法B: VS Code Live Server
+1. VS Codeで本リポジトリを開く。
+2. 拡張機能「Live Server」（Ritwick Dey）をインストール。
+3. `src/index.html` を右クリック→**Open with Live Server**。
+4. ブラウザで `http://127.0.0.1:5500/src/index.html` を開く。
+5. 画面で「戦闘開始」を押す。
 
 ## プログラムのフォルダ構成
 ```text
 src/
 	index.html            ブラウザエントリーポイント
 	main.js               初期化・UI制御
-	engine/               ゲームエンジン本体
-	render/               描画とUIコンポーネント
+	engine/               ゲーム進行・ルール
+	render/               描画・UI・エフェクト
 	sdk/                  学生向けAPI・サンドボックス
-	teams/                西軍・東軍の各ユニットスクリプト
-	config/               チーム編成設定
+	teams/                西軍・東軍のAIファイル
+	config/               チーム編成・アセット設定
 	data/                 ジョブ・マップ定義
 	assets/               画像・音声アセット
 ```
 
 ## 学生がプログラムをどう組めばいいかの解説
-- ユニット1体につき1ファイルを `teams/west` または `teams/east` に配置します。
-- 各ファイルでは `init(context)` と `update(state, api)` を必ず `export` します。
-- `init` では `job`, `initialPosition`, 任意の `memory` を返し、`job` は `data/jobs.json` に定義済みのものを使用します。
-- `update` では `api.actions`（例: `moveToward`, `attack`, `useSkill`）と `api.utils`（例: `findClosest`, `inRange`, `stepToward`）を使って行動を決定し、行動オブジェクトを `return` します。
-- 状態をまたいで保持したい値は `state.memory` 経由で読み書きできます（`init` で返した参照が毎ターン渡されます）。
+- 1ユニット=1ファイル（`teams/west`または`teams/east`に配置）。
+- 必須エクスポート：`init()`（初期化）、`moveTo()`（移動）、`attack()`（攻撃）。
+- `init`で`job`（`data/jobs.js`定義）、`initialPosition`（castle基準または絶対座標）、`memory`、`bonus`、`name`等を返す。
+- `moveTo`は毎ターン呼ばれ、移動先座標を返す。
+- `attack`は毎ターン呼ばれ、攻撃対象・方法を返す。
+- ユーティリティは`shared/unit-utils.js`経由で利用可能。
 
-### 最小テンプレート
+### 最小テンプレート例（unit01.js参考）
 ```javascript
-export function init(context) {
+import * as utils from "../../shared/unit-utils.js";
+
+export function init() {
 	return {
-		job: 'archer',
-		initialPosition: { x: 5, y: 6 },
-		memory: { lastTargetId: null }
+		job: "assassin",
+		name: "ユニットの表示名",
+		initialPosition: {
+			relativeTo: "allyCastle",
+			x: 13,
+			y: 1
+		},
+		memory: {},
+		bonus: { atk: 3, def: 2, spd: 2, hit: 2, hp: 1 }, // 合計10
 	};
 }
 
-export function update(state, api) {
-	const { self, enemies } = state;
-	const { actions, utils } = api;
-	const target = utils.findClosest(enemies, self.position);
+export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
+	var targetX = self.position.x;
+	var targetY = self.position.y;
 
-	if (!target) {
-		return actions.moveToward(20, self.position.y);
+	if (enemies.length > 0) {
+		var nearest = utils.findNearest(self, enemies);
+		targetX = nearest.position.x;
+		targetY = nearest.position.y;
+	} else if (enemyCastle && enemyCastle.position) {
+		targetX = enemyCastle.position.x;
+		targetY = enemyCastle.position.y;
 	}
 
-	if (utils.inRange(self, target)) {
-		state.memory.lastTargetId = target.id;
-		return actions.attack(target);
-	}
+	return { x: targetX, y: targetY };
+}
 
-	const nextStep = utils.stepToward(self.position, target.position);
-	return actions.moveToward(nextStep.x, nextStep.y);
+export function attack(turn, inRangeEnemies, self) {
+	if (inRangeEnemies.length > 0) {
+		var target = inRangeEnemies[0];
+		return { target: target, method: "normal" };
+	}
+	return null;
 }
 ```
 
 ## 各仕様書へのリンク
-- [運営・開発者向け内部仕様書](doc/program.md)
+- [運営・開発者向け仕様書](doc/program.md)
 - [学生向けプログラム仕様](doc/forstudent.md)
 - [画面構成ガイド](doc/display.md)
 - [ジョブ一覧・詳細](doc/job.md)
-- [アセット一覧メモ](doc/imagelist.md)
+- [アセット一覧](doc/imagelist.md)
 - [機能リスト](doc/feature_list.md)

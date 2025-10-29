@@ -1,4 +1,5 @@
-# 画像アセット一覧
+
+# 画像アセット一覧（2025年10月現在）
 
 | カテゴリ | ファイル例 | 推奨サイズ | 用途・備考 |
 | --- | --- | --- | --- |
@@ -7,25 +8,56 @@
 | 城 | `castle/fort_east.png` | 128×128 px | 東軍城（通常状態） |
 | 城 | `castle/fort_east_damaged.png` | 128×128 px | 東軍城（損傷演出） |
 | JOBアイコン | `jobs/soldier.png` | 64×64 px | ソルジャー表示用 |
+| JOBアイコン | `jobs/soldier_attack.png` | 64×64 px | ソルジャー攻撃演出 |
+| JOBアイコン | `jobs/soldier_skill.png` | 64×64 px | ソルジャースキル演出 |
+| JOBアイコン | `jobs/soldier_glad.png` | 64×64 px | ソルジャー勝利演出 |
 | JOBアイコン | `jobs/lancer.png` | 64×64 px | ランサー表示用 |
+| JOBアイコン | `jobs/lancer_attack.png` | 64×64 px | ランサー攻撃演出 |
+| JOBアイコン | `jobs/lancer_skill.png` | 64×64 px | ランサースキル演出 |
+| JOBアイコン | `jobs/lancer_glad.png` | 64×64 px | ランサー勝利演出 |
 | JOBアイコン | `jobs/archer.png` | 64×64 px | アーチャー表示用 |
+| JOBアイコン | `jobs/archer_attack.png` | 64×64 px | アーチャー攻撃演出 |
+| JOBアイコン | `jobs/archer_skill.png` | 64×64 px | アーチャースキル演出 |
+| JOBアイコン | `jobs/archer_glad.png` | 64×64 px | アーチャー勝利演出 |
 | JOBアイコン | `jobs/mage.png` | 64×64 px | メイジ表示用 |
+| JOBアイコン | `jobs/mage_attack.png` | 64×64 px | メイジ攻撃演出 |
+| JOBアイコン | `jobs/mage_skill.png` | 64×64 px | メイジスキル演出 |
+| JOBアイコン | `jobs/mage_glad.png` | 64×64 px | メイジ勝利演出 |
 | JOBアイコン | `jobs/healer.png` | 64×64 px | ヒーラー表示用 |
+| JOBアイコン | `jobs/healer_attack.png` | 64×64 px | ヒーラー攻撃演出 |
+| JOBアイコン | `jobs/healer_skill.png` | 64×64 px | ヒーラースキル演出 |
+| JOBアイコン | `jobs/healer_glad.png` | 64×64 px | ヒーラー勝利演出 |
 | JOBアイコン | `jobs/guardian.png` | 64×64 px | ガーディアン表示用 |
+| JOBアイコン | `jobs/guardian_attack.png` | 64×64 px | ガーディアン攻撃演出 |
+| JOBアイコン | `jobs/guardian_skill.png` | 64×64 px | ガーディアンスキル演出 |
+| JOBアイコン | `jobs/guardian_glad.png` | 64×64 px | ガーディアン勝利演出 |
 | JOBアイコン | `jobs/assassin.png` | 64×64 px | アサシン表示用 |
+| JOBアイコン | `jobs/assassin_attack.png` | 64×64 px | アサシン攻撃演出 |
+| JOBアイコン | `jobs/assassin_skill.png` | 64×64 px | アサシンスキル演出 |
+| JOBアイコン | `jobs/assassin_glad.png` | 64×64 px | アサシン勝利演出 |
 | JOBアイコン | `jobs/engineer.png` | 64×64 px | エンジニア表示用 |
+| JOBアイコン | `jobs/engineer_attack.png` | 64×64 px | エンジニア攻撃演出 |
+| JOBアイコン | `jobs/engineer_skill.png` | 64×64 px | エンジニアスキル演出 |
+| JOBアイコン | `jobs/engineer_glad.png` | 64×64 px | エンジニア勝利演出 |
 | JOBアイコン | `jobs/summoner.png` | 64×64 px | サモナー表示用 |
+| JOBアイコン | `jobs/summoner_attack.png` | 64×64 px | サモナー攻撃演出 |
+| JOBアイコン | `jobs/summoner_skill.png` | 64×64 px | サモナースキル演出 |
+| JOBアイコン | `jobs/summoner_glad.png` | 64×64 px | サモナー勝利演出 |
 | JOBアイコン | `jobs/scout.png` | 64×64 px | スカウト表示用 |
+| JOBアイコン | `jobs/scout_attack.png` | 64×64 px | スカウト攻撃演出 |
+| JOBアイコン | `jobs/scout_skill.png` | 64×64 px | スカウトスキル演出 |
+| JOBアイコン | `jobs/scout_glad.png` | 64×64 px | スカウト勝利演出 |
 | JOBアイコン | `jobs/sumo.png` | 64×64 px | 相撲レスラー表示用 |
-| マップタイル | `map/ground.png` | 64×64 px | 通常地面タイル（タイルセット） |
+| JOBアイコン | `jobs/sumo_attack.png` | 64×64 px | 相撲攻撃演出 |
+| JOBアイコン | `jobs/sumo_skill.png` | 64×64 px | 相撲スキル演出 |
+| JOBアイコン | `jobs/sumo_glad.png` | 64×64 px | 相撲勝利演出 |
+| JOBアイコン | `jobs/monster.png` | 64×64 px | モンスター表示用 |
+| マップタイル | `map/ground.png` | 64×64 px | 通常地面タイル |
 | マップタイル | `map/path.png` | 64×64 px | 通路タイル |
+| マップタイル | `map/magefire.png` | 64×64 px | 魔法陣タイル |
 | マップタイル | `map/wall_intact.png` | 64×64 px | 壁（通常） |
 | マップタイル | `map/wall_damaged.png` | 64×64 px | 壁（損傷） |
 | エフェクト | `sfx/skill_flash.png` | 96×96 px | スキル発動エフェクト |
 | エフェクト | `sfx/impact.png` | 96×96 px | 攻撃ヒットエフェクト |
 | UI | `ui/hp_bar_bg.png` | 128×16 px | HPバー背景 |
 | UI | `ui/hp_bar_fill.png` | 128×16 px | HPバー前景（伸縮表示） |
-| UI | `ui/skill_icon.png` | 48×48 px | スキル使用状況アイコン |
-| UI | `ui/button_play.png` | 96×32 px | 再生ボタン |
-| UI | `ui/button_pause.png` | 96×32 px | 一時停止ボタン |
-| UI | `ui/button_step.png` | 96×32 px | ステップ進行ボタン |

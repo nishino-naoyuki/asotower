@@ -16,10 +16,9 @@ export function init(context) {
     job: 'archer',                      // 使用するJOB（doc/job.md参照）
     name: 'ユニット太郎',               // 画面に表示したい名前（未指定ならJOB名）
     initialPosition: {
-      relativeTo: 'allyCastle',
-      forward: 3,
-      lateral: -1
-      // x / y を併用すれば城座標に対する絶対オフセットも指定できます
+      relativeTo: 'allyCastle', //自軍の城を基準とした位置で配置するという意味
+      x: 3, //自軍の城からｘ方向にどれだけ離れた位置に配置するか（この例では３マス）
+      y: -1 //自軍の城からy方向にどれだけ離れた位置に配置するか（この例ではー１マス）
     },
     // パラメーターボーナス（任意）
     // 合計10まで。job.mdの正式パラメータ名のみ有効
@@ -55,7 +54,7 @@ export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
   return { x: targetX, y: targetY };
 }
 
-// 攻撃対象と方法を決める（射程内の敵がいれば最初の1体を通常攻撃）
+// 攻撃対象と方法を決める
 export function attack(turn, inRangeEnemies, self) {
   if (inRangeEnemies.length > 0) {
     var target = inRangeEnemies[0];
@@ -67,12 +66,13 @@ export function attack(turn, inRangeEnemies, self) {
 }
 ````
 
-
+## 3. 実装関数の説明
 
 ### init関数
 **説明**
 試合開始時に1回だけ呼ばれ、ユニットの初期設定（ジョブ・名前・初期位置・ボーナス・記憶領域など）を返す関数です。
-### init関数の引数・戻り値
+
+**init関数の引数**
 
 | 引数名   | 型      | 説明                                      |
 |----------|--------|-------------------------------------------|
@@ -98,8 +98,9 @@ export function attack(turn, inRangeEnemies, self) {
 
 ### moveTo関数
 **説明**
-毎ターン呼ばれ、ユニットが「どこに移動するか」を決めるための関数です。敵や城の位置を見て移動先座標を返します。
-### moveTo関数の引数・戻り値
+毎ターン呼ばれ、ユニットが「どこに移動するかの目標」を決めるための関数です。敵や城の位置を見て移動先座標を返します。ユニットは目標座標にむかって速度パラメータの分移動します。
+
+**moveTo関数の引数**
 
 | 引数名         | 型        | 説明                                      |
 |---------------|----------|-------------------------------------------|
@@ -114,22 +115,22 @@ export function attack(turn, inRangeEnemies, self) {
 
 | キー | 型    | 説明                       |
 |------|-------|----------------------------|
-| x    | number| 移動先のx座標（マップ上）   |
-| y    | number| 移動先のy座標（マップ上）   |
+| x    | number| 移動先の目標x座標（マップ上）   |
+| y    | number| 移動先の目標y座標（マップ上）   |
 
-移動先の座標（x, y）をオブジェクトで返します。
+移動先の目標座標（x, y）をオブジェクトで返します。あくまで指定するのは目標の座標であり、指定した座標にワープするわけではありません。目標座標に向かってユニットごとに指定された速度分移動します
 
 
 **戻り値の例**
 
 > ※下記は「例」です。コピペしてもそのまま動くわけではありません。実際の座標値は状況に応じて変わります。
 
-1. 敵ユニットの座標へ移動する場合（例：最も近い敵が変数nearestの場合）
+1. 敵ユニットの座標を目標として移動する場合（例：最も近い敵が変数nearestの場合）
 ```js
 { x: nearest.position.x, y: nearest.position.y }
 ```
 
-2. 敵城の座標へ移動する場合
+2. 敵城の座標を目標として移動する場合
 ```js
 { x: enemyCastle.position.x, y: enemyCastle.position.y }
 ```
@@ -145,7 +146,8 @@ export function attack(turn, inRangeEnemies, self) {
 ### attack関数
 **説明**
 毎ターン呼ばれ、ユニットが「誰をどう攻撃するか」を決めるための関数です。射程内の敵や必殺技の使用可否を判定し、攻撃内容を返します。
-### attack関数の引数・戻り値
+
+**attack関数の引数**
 
 | 引数名         | 型        | 説明                                      |
 |---------------|----------|-------------------------------------------|
@@ -180,7 +182,7 @@ null
 ```
 
 ## 4. 補足メモ
-- 射程は `stats.range / 10` マスとして判定されます。エンジン側で統一されているため、AI側で個別に計算する必要はありません。
+- 射程は `stats.range / 10` マスとして判定されます。
 - キャラクターアイコン上部に表示される名前は `init` で返した `name` プロパティです。省略するとJOB名が表示されます。
 - `init(context)` の `context` には `side` のほか `allyCastle`, `enemyCastle`, `mapSize` が含まれます。城位置を使って自分で絶対座標を計算することも可能です。
 - `initialPosition` は `{ x, y }` で直接座標を指定する従来形式に加え、`{ relativeTo: 'allyCastle', forward: 3, lateral: -1 }` や `{ relativeTo: 'allyCastle', x: 3, y: -1 }` のように自城を原点としたオフセット指定ができます（`forward` は敵方向、`lateral` は下方向が正）。
