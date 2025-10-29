@@ -17,8 +17,7 @@ export function processSkill(state, unit) {
     unit.memory.mageDot.position = { ...unit.position };
     const center = unit.memory.mageDot.position;
     // 2タイル分のピクセル距離
-    const tileSize = state.map.tileSize || 64;
-    const range = tileSize * 2;
+    const range = 2;
     // 攻撃力20の仮想ユニット
     const dotUnit = {
       ...unit,

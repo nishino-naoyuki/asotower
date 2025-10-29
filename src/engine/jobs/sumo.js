@@ -26,8 +26,8 @@ export function doSkill(state, unit, targets) {
       dy = dy / len;
     }
     // 逆方向に4マス分移動
-    target.position.x += dx * tileSize * 4;
-    target.position.y += dy * tileSize * 4;
+    target.position.x += dx * 4;
+    target.position.y += dy * 4;
     queueEffect(state, {
       kind: 'attack',
       position: target.position,

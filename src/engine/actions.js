@@ -28,20 +28,50 @@ export function createTurnProcessor(state, config = {}) {
         const unit = turnOrder[index++];
         if (unit.hp <= 0 || state.status.finished) continue;
 
+
         const module = unit.module;
-        let command = null;
         try {
-          command =
-            module.update?.(createStateView(state, unit), createApi()) ?? null;
+          // --- 移動処理 ---
+          if (typeof module.moveTo === 'function') {
+            const moveTarget = module.moveTo(
+              state.turn,
+              state.units.filter(u => u.side !== unit.side && u.hp > 0), // 敵
+              state.units.filter(u => u.side === unit.side && u.id !== unit.id && u.hp > 0), // 味方
+              state.map.castles[unit.side === 'west' ? 'east' : 'west'], // 敵城
+              state.map.castles[unit.side], // 味方城
+              unit // 自分
+            );
+            let finalTarget = moveTarget;
+            // 目標座標にユニットがいる場合はY+1
+            if (finalTarget && isOccupiedCell(state, finalTarget, unit)) {
+              finalTarget = { x: finalTarget.x, y: finalTarget.y + 1 };
+            }
+            // TODO: 敵目前で止まる処理（必要なら追加）
+            if (finalTarget) {
+              executeCommand(state, unit, { type: 'move', x: finalTarget.x, y: finalTarget.y });
+            }
+          }
+
+          // --- 攻撃処理 ---
+          if (typeof module.attack === 'function') {
+            const attackable = getAttackableEnemies(state, unit);
+            const attackResult = module.attack(state.turn, attackable, unit);
+            if (attackResult && attackResult.target) {
+              if (attackResult.method === 'skill') {
+                executeCommand(state, unit, { type: 'skill', targetId: attackResult.target.id });
+              } else {
+                executeCommand(state, unit, { type: 'attack', targetId: attackResult.target.id });
+              }
+            }
+          }
         } catch (err) {
           state.log.push({
             turn: state.turn,
-            message: `${unit.id} のupdateでエラー: ${err}`
+            message: `${unit.id} のAIでエラー: ${err}`
           });
           continue;
         }
 
-        executeCommand(state, unit, command);
         return { unit };
       }
       return null;

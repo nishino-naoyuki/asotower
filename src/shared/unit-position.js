@@ -52,7 +52,7 @@ export function resolveUnitPosition(rawPosition, fallbackPosition, side) {
   const castle = castles?.[side];
   const fallback = clonePoint(fallbackPosition ?? castle ?? { x: 0, y: 0 });
 
-  console.log("resolveUnitPosition:", { rawPosition, fallbackPosition, side, castle, fallback });
+  //console.log("resolveUnitPosition:", { rawPosition, fallbackPosition, side, castle, fallback });
   if (!rawPosition || typeof rawPosition !== "object") {
     if (
       rawPosition &&
@@ -74,15 +74,11 @@ export function resolveUnitPosition(rawPosition, fallbackPosition, side) {
     const lateral = toNumber(base.lateral, 0);
     let dx = toNumber(base.x, 0);
     let dy = toNumber(base.y, 0);
-    //if (forward !== 0) {
-      const direction = side === "west" ? 1 : -1;
-      dx *= direction;
-    //}
+    const direction = side === "west" ? 1 : -1;
+    dx *= direction;
     if (lateral !== 0) {
       dy += lateral;
     }
-    console.log("resolveUnitPosition!! with castle origin:", { side, castle, direction, forward, lateral, dx, dy });
-    
     return {
       x: castle.x + dx,
       y: castle.y + dy

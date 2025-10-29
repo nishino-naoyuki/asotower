@@ -70,7 +70,7 @@ export function processSkill(state, unit) {
         continue;
       }
       // AI: 射程内の一番近い敵を攻撃
-      const targets = getAttackableEnemies(state, u, u.stats.range * (state.map?.tileSize || 64));
+      const targets = getAttackableEnemies(state, u, u.stats.range );
       if (targets.length > 0) {
         // 最も近い敵
         const target = targets.reduce((a, b) => {

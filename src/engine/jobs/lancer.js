@@ -8,8 +8,7 @@ export function doSkill(state, unit, targets) {
   // 新仕様: 縦横4マスにいる敵すべてに攻撃
   const center = unit.position;
   // 2タイル分のピクセル距離
-  const tileSize = state.map.tileSize || 64;
-  const range = tileSize * 2;
+  const range = 2;
   const areaTargets = getAttackableEnemies(state, unit, range);
 
   if (areaTargets.length === 0) return;

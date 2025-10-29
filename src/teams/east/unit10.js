@@ -1,3 +1,5 @@
+import * as utils from "../../shared/unit-utils.js";
+
 export function init() {
   return {
     job: "guardian",
@@ -12,27 +14,28 @@ export function init() {
   };
 }
 
-export function update(state, api) {
-  const { self, enemies } = state;
-  const { actions, utils } = api;
+// どこに移動するか決める（最も近い敵がいればその座標、いなければ敵城）
+export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
+  var targetX = self.position.x;
+  var targetY = self.position.y;
 
-  const target = utils.findClosest(enemies, self.position);
-  if (!target) {
-    const castle = state.enemyCastle;
-    if (castle?.position) {
-      const dist = utils.distance(self.position, castle.position);
-      const range = self.stats.range / 10;
-      if (dist <= range) {
-        return actions.attackCastle();
-      }
-      return actions.moveToward(castle.position.x, castle.position.y);
-    }
-    return actions.moveToward(22, 12);
+  if (enemies.length > 0) {
+    var nearest = utils.findNearest(self, enemies);
+    targetX = nearest.position.x;
+    targetY = nearest.position.y;
+  } else if (enemyCastle && enemyCastle.position) {
+    targetX = enemyCastle.position.x;
+    targetY = enemyCastle.position.y;
   }
 
-  if (!self.skill.used) return actions.useSkill(target);
-  if (utils.inRange(self, target)) return actions.attack(target);
+  return { x: targetX, y: targetY };
+}
 
-  const step = utils.stepToward(self.position, { x: target.position.x - 1, y: target.position.y });
-  return actions.moveToward(step.x, step.y);
+// 攻撃対象と方法を決める（射程内の敵がいれば最初の1体を通常攻撃）
+export function attack(turn, inRangeEnemies, self) {
+  if (inRangeEnemies.length > 0) {
+    var target = inRangeEnemies[0];
+    return { target: target, method: "normal" };
+  }
+  return null;
 }
