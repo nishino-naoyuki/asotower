@@ -1,3 +1,72 @@
+---
+
+## 汎用関数（src/shared/unit-utils.js）
+ユニットAIやゲームエンジンで利用可能な汎用関数群。AI開発・ロジック実装時に活用できます。
+
+### distanceBetween(a, b)
+- 概要: 2点間の距離（タイル単位）を計算。座標オブジェクト {x, y} を受け取り、ユークリッド距離を返す。
+- 引数: a, b（座標オブジェクト）
+- 戻り値: 距離（数値）
+- 使用例: `distanceBetween(self.position, enemy.position)`
+- ロジック: `Math.sqrt(dx*dx + dy*dy)` で計算。障害物や壁は考慮しない。
+
+### findNearest(self, units)
+- 概要: 配列から最も近いユニットを取得。自分の座標と各ユニットの座標を比較。
+- 引数: self（自分のユニット）、units（ユニット配列）
+- 戻り値: 最も近いユニット（オブジェクト）
+- 使用例: `findNearest(self, enemies)`
+- ロジック: 距離が最小のユニットを線形探索で返す。
+
+### findFarthestEnemyPosition(self, enemies)
+- 概要: 自分から最も遠い敵の座標を取得。
+- 引数: self（自分のユニット）、enemies（敵ユニット配列）
+- 戻り値: 座標オブジェクト {x, y} または null
+- 使用例: `findFarthestEnemyPosition(self, enemies)`
+- ロジック: 距離が最大の敵ユニットを探索し、その座標を返す。
+
+### getEnemyCastlePosition(self, map)
+- 概要: 敵の城の座標を取得。
+- 引数: self（自分のユニット）、map（マップ情報）
+- 戻り値: 座標オブジェクト {x, y} または null
+- 使用例: `getEnemyCastlePosition(self, map)`
+- ロジック: 自軍sideから敵sideを判定し、map.castlesから座標を取得。
+
+### hasUsedSkill(unit)
+- 概要: 指定ユニットが必殺技（スキル）を使ったか判定。
+- 引数: unit（ユニットオブジェクト）
+- 戻り値: true/false
+- 使用例: `hasUsedSkill(self)`
+- ロジック: unit.skill.usedフラグを参照。
+
+### getUnitPosition(unit)
+- 概要: ユニットの現在座標を取得。
+- 引数: unit（ユニットオブジェクト）
+- 戻り値: 座標オブジェクト {x, y} または null
+- 使用例: `getUnitPosition(self)`
+- ロジック: unit.positionプロパティを返す。
+
+### getUnitHp(unit)
+- 概要: ユニットの残りHPを取得。
+- 引数: unit（ユニットオブジェクト）
+- 戻り値: HP（数値）
+- 使用例: `getUnitHp(self)`
+- ロジック: unit.hpプロパティを返す。
+
+### getUnitJob(unit)
+- 概要: ユニットのジョブ名を取得。
+- 引数: unit（ユニットオブジェクト）
+- 戻り値: ジョブ名（文字列）
+- 使用例: `getUnitJob(self)`
+- ロジック: unit.jobプロパティを返す。
+
+### getUnitsByJob(units, jobName)
+- 概要: ユニット配列から指定ジョブのユニットを抽出。
+- 引数: units（ユニット配列）、jobName（ジョブ名）
+- 戻り値: 条件に合うユニット配列
+- 使用例: `getUnitsByJob(enemies, "healer")`
+- ロジック: filterでjobプロパティ一致ユニットのみ抽出。
+
+---
 # プログラム内部仕様書（運営・開発者向け）
 
 ## 1. 全体概要

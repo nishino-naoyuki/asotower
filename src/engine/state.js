@@ -50,7 +50,7 @@ export function createInitialState({ west, east, config, sandbox }) {
   const map = JSON.parse(JSON.stringify(MAP_DATA));
 
   return {
-    turn: 0,
+    turn: 1,
     map,
     units,
     log: [],

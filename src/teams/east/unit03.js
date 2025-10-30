@@ -2,11 +2,11 @@ import * as utils from "../../shared/unit-utils.js";
 
 export function init() {
   return {
-    job: "archer",
+    job: "scout",
     name: "柳町",
     initialPosition: {
       relativeTo: "allyCastle",
-      x: 3,
+      x: 12,
       y: -2
     },
     memory: {},
@@ -14,28 +14,26 @@ export function init() {
   };
 }
 
-// どこに移動するか決める（最も近い敵がいればその座標、いなければ敵城）
+// どこに移動するか決める
 export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
-  var targetX = self.position.x;
-  var targetY = self.position.y;
-
-  if (enemies.length > 0) {
-    var nearest = utils.findNearest(self, enemies);
-    targetX = nearest.position.x;
-    targetY = nearest.position.y;
-  } else if (enemyCastle && enemyCastle.position) {
-    targetX = enemyCastle.position.x;
-    targetY = enemyCastle.position.y;
-  }
+  //ひたすら城に向かう
+  const targetX = enemyCastle.x;
+  const targetY = enemyCastle.y;
 
   return { x: targetX, y: targetY };
 }
 
-// 攻撃対象と方法を決める（射程内の敵がいれば最初の1体を通常攻撃）
+// 攻撃対象と方法を決める
 export function attack(turn, inRangeEnemies, self) {
-  if (inRangeEnemies.length > 0) {
-    var target = inRangeEnemies[0];
-    return { target: target, method: "normal" };
+  //城が射程に入れば攻撃する
+  if( utils.isEnemyCastleInRange(self)){
+    return { target: self, method: "CastleAttack" };
+  }else if(inRangeEnemies.length > 0){
+    if( utils.hasUsedSkill(self)){
+      return { target: inRangeEnemies[0], method: "normal" };
+    }else{
+      return { target: self, method: "skill" };
+    }
   }
   return null;
 }

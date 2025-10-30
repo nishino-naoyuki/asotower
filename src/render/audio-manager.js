@@ -96,10 +96,31 @@ class AudioManager {
     this.currentBgm.play().catch(() => {});
   }
 
-  playSfx(path) {
-    const audio = new Audio(path);
-    audio.volume = 0.7;
-    audio.play().catch(() => {});
+  playSfx(path, withEcho = false) {
+    if (!withEcho) {
+      const audio = new Audio(path);
+      audio.volume = 0.7;
+      audio.play().catch(() => {});
+      return;
+    }
+    // --- エコー（フィードバック付き）再生 ---
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    fetch(path)
+      .then(res => res.arrayBuffer())
+      .then(buf => ctx.decodeAudioData(buf))
+      .then(audioBuffer => {
+        const source = ctx.createBufferSource();
+        source.buffer = audioBuffer;
+        const delay = ctx.createDelay();
+        delay.delayTime.value = 0.25;
+        const feedback = ctx.createGain();
+        feedback.gain.value = 0.4; // 残響の強さ
+        delay.connect(feedback);
+        feedback.connect(delay);
+        source.connect(delay);
+        delay.connect(ctx.destination);
+        source.start();
+      });
   }
 
   async playBgmKey(key) {
@@ -141,7 +162,8 @@ class AudioManager {
       console.warn(`Job SFX '${job}:${kind}' not found`);
       return;
     }
-    this.playSfx(url);
+    // down時のみエコー付き再生
+    this.playSfx(url, (kind === "down" || kind === "skill"));
   }
 
   normalizeBgmEntry(entry) {

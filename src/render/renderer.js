@@ -294,6 +294,9 @@ export class Renderer {
         case "heal_special":
           this.drawHealSpecialEffect(ctx, effect, progress);
           break;
+        case "move":
+          // 移動は画像エフェクトなし
+          break;
         case "skill":
         case "effect":
         default:
@@ -409,7 +412,7 @@ export class Renderer {
     const source = effect.source ? toCenterPixels(effect.source) : toCenterPixels(effect.position);
     let imageKey = "effect_impact";
     // ジョブごとの攻撃画像
-    console.log("drawAttackImpact effect.job:", effect.job);
+    //console.log("drawAttackImpact effect.job:", effect.job);
     if (effect.job) {
       imageKey = `job_${effect.job}_attack`;
       const jobSprite = this.getImage(imageKey);

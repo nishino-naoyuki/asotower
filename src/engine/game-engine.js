@@ -1,8 +1,11 @@
-import { createInitialState } from "./state.js?v=202510261659";
-import { createTurnProcessor } from "./actions.js?v=202510261659";
+
+import { createInitialState } from "./state.js";
+import { createTurnProcessor } from "./actions.js?v=202510231431";
+import { ReplayRecorder } from "../render/replay-recorder.js";
 import { Sandbox } from "../sdk/sandbox.js";
-import { loadConfig } from "../sdk/api.js?v=202510242340";
+import { loadConfig } from "../sdk/api.js";
 import { audioManager } from "../render/audio-manager.js?v=202510231450";
+
 
 export async function loadTeams() {
   const config = await loadConfig();
@@ -15,13 +18,10 @@ export async function loadTeams() {
 
 async function loadSide(side, config) {
   const team = [];
-  const orientation = side === "east" ? -1 : 1;
   for (const slot of config[side]) {
     const moduleUrl = new URL(`../teams/${side}/${slot.file}`, import.meta.url);
     moduleUrl.searchParams.set("v", Date.now().toString());
     const mod = await Sandbox.importModule(moduleUrl.href);
-    //console.log("team loaded１:", side, mod);
-    slot.initialPosition.x *= orientation;
     team.push({
       slot: slot.slot,
       file: slot.file,
@@ -31,15 +31,17 @@ async function loadSide(side, config) {
       side
     });
   }
-  //console.log("team loaded２:", side, team);
   return team;
 }
 
 export function createBattle({ west, east, config, renderer, overlay }) {
   const sandbox = new Sandbox();
+  const recorder = new ReplayRecorder();
 
-  audioManager.playBgmKey("main");
-  const state = createInitialState({ west, east, config, sandbox });
+  const state = createInitialState({ west, east, config, sandbox })
+  window.__ASOTOWER_STATE__ = state;
+
+  audioManager.playBgmKey("main");;
   const turnIntervalMs = config.turnIntervalMs ?? 5000;
   let timerId = null;
   let effectFrame = null;

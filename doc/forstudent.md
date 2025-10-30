@@ -34,6 +34,7 @@ export function init(context) {
   };
 }
 
+---
 // どこに移動するか決める（最も近い敵がいればその座標、いなければ敵城）
 export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
   // デフォルトは現在地

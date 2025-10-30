@@ -1,7 +1,7 @@
 {
   "maxUnits": 10,
-  "turnIntervalMs": 500,
-  "unitActionIntervalMs": 1000,
+  "turnIntervalMs": 1000,
+  "unitActionIntervalMs": 3000,
   "tileSize": 64,
   "west": [
     { "slot": 1, "file": "unit01.js", "job": "guardian", "initialPosition": { "x": 0, "y": 0 } },

@@ -33,7 +33,12 @@ export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
 
 // 攻撃対象と方法を決める（射程内の敵がいれば最初の1体を通常攻撃）
 export function attack(turn, inRangeEnemies, self) {
-  if (inRangeEnemies.length > 0) {
+  const getDamagedAllies = utils.getDamagedAllies(self);
+  
+  if( getDamagedAllies.length > 0 && utils.hasUsedSkill(self) === false){
+    var target = getDamagedAllies[0];
+    return { target: target, method: "skill" };
+  }else if (inRangeEnemies.length > 0) {
     var target = inRangeEnemies[0];
     return { target: target, method: "normal" };
   }

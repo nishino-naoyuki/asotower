@@ -44,7 +44,7 @@ export function validateTeams(west, east, config) {
         ? errors.push(`${unit.side} の${unit.name ?? unit.file} の初期位置が陣地範囲外(x=${MAP_DATA.castles.west.x + resolvedPosition.x})です。${HALF_MAP_WIDTH-MAP_DATA.castles.west.x}より小さい値である必要があります。`)
         : errors.push(`${unit.side} の${unit.name ?? unit.file} の初期位置が陣地範囲外(x=${MAP_DATA.castles.east.x - resolvedPosition.x})です。${MAP_DATA.castles.east.x-HALF_MAP_WIDTH}より小さい値である必要があります。`)
     }
-    console.log("resolvedPosition:", resolvedPosition);
+    //console.log("resolvedPosition:", resolvedPosition);
   }
   
   if (errors.length) {

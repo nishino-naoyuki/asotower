@@ -1,3 +1,51 @@
+// 2点間の直線上セルリスト（整数座標）を返す（Bresenhamアルゴリズム簡易版）
+function getLinePositions(from, to) {
+  const positions = [];
+  const x0 = Math.floor(from.x), y0 = Math.floor(from.y);
+  const x1 = Math.floor(to.x), y1 = Math.floor(to.y);
+  const dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
+  const sx = x0 < x1 ? 1 : -1;
+  const sy = y0 < y1 ? 1 : -1;
+  let err = dx - dy;
+  let x = x0, y = y0;
+  while (true) {
+    positions.push({ x, y });
+    if (x === x1 && y === y1) break;
+    const e2 = 2 * err;
+    if (e2 > -dy) { err -= dy; x += sx; }
+    if (e2 < dx) { err += dx; y += sy; }
+  }
+  return positions;
+}
+
+// 直線上で最初に出会う敵セルを返す（味方は無視）
+function findFirstEnemyOnLine(lineCells, enemies) {
+  for (const cell of lineCells) {
+    if (enemies.some(e => Math.floor(e.position.x) === cell.x && Math.floor(e.position.y) === cell.y)) {
+      return cell;
+    }
+  }
+  return null;
+}
+
+// 指定座標が埋まっている場合、ずらし候補を順に返す
+function findAvailablePosition(state, basePos, self) {
+  const directions = [
+    { dx: 0, dy: -1 },
+    { dx: 0, dy: 1 },
+    { dx: 1, dy: 0 },
+    { dx: -1, dy: 0 }
+  ];
+  let offset = 1;
+  while (offset <= 5) { // 最大5マスまで探索
+    for (const dir of directions) {
+      const pos = { x: basePos.x + dir.dx * offset, y: basePos.y + dir.dy * offset };
+      if (!isOccupiedCell(state, pos, self)) return pos;
+    }
+    offset++;
+  }
+  return basePos; // どこも空いてなければ元の位置
+}
 // getAttackableEnemiesはrules.jsからimport
 import { movementPerTurn, computeDamage, isInRange, rangePerTurn, getAttackableEnemies } from "./rules.js";
 import { jobsMap } from './jobs/index.js';
@@ -41,15 +89,8 @@ export function createTurnProcessor(state, config = {}) {
               state.map.castles[unit.side], // 味方城
               unit // 自分
             );
-            let finalTarget = moveTarget;
-            // 目標座標にユニットがいる場合はY+1
-            if (finalTarget && isOccupiedCell(state, finalTarget, unit)) {
-              finalTarget = { x: finalTarget.x, y: finalTarget.y + 1 };
-            }
-            // TODO: 敵目前で止まる処理（必要なら追加）
-            if (finalTarget) {
-              executeCommand(state, unit, { type: 'move', x: finalTarget.x, y: finalTarget.y });
-            }
+            executeCommand(state, unit, { type: 'move', x: moveTarget.x, y: moveTarget.y });
+            
           }
 
           // --- 攻撃処理 ---
@@ -58,7 +99,17 @@ export function createTurnProcessor(state, config = {}) {
             const attackResult = module.attack(state.turn, attackable, unit);
             if (attackResult && attackResult.target) {
               if (attackResult.method === 'skill') {
+                //console.log(`Using skill for unit: ${unit.id} targetId=${attackResult.target.id}`);
+                queueEffect(state, {
+                  kind: "skill",
+                  position: unit.position,
+                  jobSounds: [{ job: unit.job, kind: "skill" }],
+                  durationMs: 1200 // 音声長に合わせて調整
+                });
                 executeCommand(state, unit, { type: 'skill', targetId: attackResult.target.id });
+                // 城攻撃AI分岐
+              } else if (attackResult && attackResult.method === 'castleattack') {
+                executeCommand(state, unit, { type: 'attackCastle' });
               } else {
                 executeCommand(state, unit, { type: 'attack', targetId: attackResult.target.id });
               }
@@ -67,7 +118,7 @@ export function createTurnProcessor(state, config = {}) {
         } catch (err) {
           state.log.push({
             turn: state.turn,
-            message: `${unit.id} のAIでエラー: ${err}`
+            message: `${unit.id} のユニットでエラー: ${err}`
           });
           continue;
         }
@@ -234,20 +285,70 @@ function handleMove(state, unit, command) {
     x: Math.floor(unit.position.x),
     y: Math.floor(unit.position.y)
   };
-  const targetCell = {
+  let targetCell = {
     x: Math.floor(adjusted.x),
     y: Math.floor(adjusted.y)
   };
   const enteringNewCell = currentCell.x !== targetCell.x || currentCell.y !== targetCell.y;
 
-  if (enteringNewCell && isOccupiedCell(state, adjusted, unit)) {
-    state.log.push({ turn: state.turn, message: `${unit.name} は混雑して進めなかった` });
-    return;
+  let finalTarget = { x: targetCell.x, y: targetCell.y };
+  if (!isScoutInSkillMode(self)) {
+    // 直線上のセルリスト取得
+    const lineCells = getLinePositions(unit.position, finalTarget);
+    // 直線上の敵を判定
+    const enemies = state.units.filter(u => u.side !== unit.side && u.hp > 0);
+    const firstEnemyCell = findFirstEnemyOnLine(lineCells, enemies);
+    if (firstEnemyCell) {
+      // 敵の1マス手前で止まる
+      const idx = lineCells.findIndex(cell => cell.x === firstEnemyCell.x && cell.y === firstEnemyCell.y);
+      if (idx > 0) {
+        finalTarget = { x: lineCells[idx - 1].x, y: lineCells[idx - 1].y };
+      } else {
+        finalTarget = { x: unit.position.x, y: unit.position.y };
+      }
+    }
+    // 目標座標が埋まっている場合はずらし処理
+    if (isOccupiedCell(state, finalTarget, unit)) {
+      finalTarget = findAvailablePosition(state, finalTarget, unit);
+    }
+    targetCell = finalTarget;
   }
-  unit.position.x = adjusted.x;
-  unit.position.y = adjusted.y;
+  // ずらし処理: 移動先が埋まっている場合はY-1→Y+1→X+1→X-1の順で空きセルを探す
+  if (enteringNewCell && !isOccupiedCell(state, targetCell, unit)) {
+    const directions = [
+      { dx: 0, dy: -1 },
+      { dx: 0, dy: 1 },
+      { dx: 1, dy: 0 },
+      { dx: -1, dy: 0 }
+    ];
+    let found = false;
+    for (let offset = 1; offset <= 5 && !found; offset++) {
+      for (const dir of directions) {
+        const pos = { x: targetCell.x + dir.dx * offset, y: targetCell.y + dir.dy * offset };
+        if (!isOccupiedCell(state, pos, unit)) {
+          targetCell = pos;
+          found = true;
+          break;
+        }
+      }
+    }
+    if (!found) {
+      state.log.push({ turn: state.turn, message: `${unit.name} は混雑して進めなかった` });
+      return;
+    }
+  }
+  const orgpositon = { x: unit.position.x, y: unit.position.y };
+  unit.position.x = targetCell.x;
+  unit.position.y = targetCell.y;
 
-  state.log.push({ turn: state.turn, message: `${unit.name} が移動` });
+  state.log.push({ turn: state.turn, message: `${unit.name} が${orgpositon.x}, ${orgpositon.y}から${targetCell.x}, ${targetCell.y}へ移動` });
+  queueEffect(state, {
+    kind: "move",
+    position: unit.position,
+    sound: "move", // ←追加
+    source: unit.position,
+    durationMs: 800 // 任意
+  });
 }
 
 function adjustForWalls(map, from, to) {
@@ -279,9 +380,27 @@ function isWallCell(walls, point) {
   return walls.some((wall) => wall.x === cellX && wall.y === cellY);
 }
 
+function isScoutInSkillMode(self) {
+  return (
+    self.job === 'scout' &&
+    self.skill &&
+    self.memory &&
+    self.memory.stealth &&
+    typeof self.memory.stealth.turns === 'number' &&
+    self.memory.stealth.turns > 0
+  );
+}
+
 function isOccupiedCell(state, position, self) {
   const cellX = Math.floor(position.x);
   const cellY = Math.floor(position.y);
+
+  // scoutがスキル中なら敵ユニットは無視
+  if (isScoutInSkillMode(self)) {
+    console.log("スカウトがスキル中のため、敵ユニットを無視");
+    return false;
+  }
+
   return state.units.some((unit) => {
     if (unit === self || unit.hp <= 0) return false;
     return Math.floor(unit.position.x) === cellX && Math.floor(unit.position.y) === cellY;
