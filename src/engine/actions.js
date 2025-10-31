@@ -97,7 +97,7 @@ export function createTurnProcessor(state, config = {}) {
     },
     finalize() {
       state.turn += 1;
-      checkEndCondition(state);
+      checkEndCondition(state,config);
     }
   };
 }
@@ -512,15 +512,41 @@ function handleSkill(state, unit, command) {
   }
 }
 
-function checkEndCondition(state) {
+function checkEndCondition(state, config) {
   const westCastle = state.map.castles.westHp;
   const eastCastle = state.map.castles.eastHp;
+  const turnLimit = config?.maxTurn ?? 20;
+
+  //console.log("turnLimit:", turnLimit,"config:", config, "state:", state);
+  // 通常の城陥落判定
   if (westCastle <= 0 || eastCastle <= 0) {
     state.status.finished = true;
     if (westCastle <= 0 && eastCastle <= 0) {
       state.status.winner = "引き分け";
     } else {
       state.status.winner = westCastle <= 0 ? "東軍" : "西軍";
+    }
+    return;
+  }
+
+  // ターン数制限による判定
+  if (state.turn >= turnLimit) {
+    state.status.finished = true;
+    if (westCastle > eastCastle) {
+      state.status.winner = "西軍";
+    } else if (eastCastle > westCastle) {
+      state.status.winner = "東軍";
+    } else {
+      // 城HP同じなら生存ユニット数で判定
+      const westAlive = state.units.filter(u => u.side === "west" && u.hp > 0).length;
+      const eastAlive = state.units.filter(u => u.side === "east" && u.hp > 0).length;
+      if (westAlive > eastAlive) {
+        state.status.winner = "西軍";
+      } else if (eastAlive > westAlive) {
+        state.status.winner = "東軍";
+      } else {
+        state.status.winner = "引き分け";
+      }
     }
   }
 }

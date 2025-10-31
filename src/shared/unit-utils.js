@@ -29,7 +29,7 @@ export function isEnemyCastleInRange(self, range = null) {
   if (!castle) return false;
     const dist = Math.hypot(self.position.x - castle.x, self.position.y - castle.y);
     const attackRange = range !== null ? range : rangePerTurn(self);
-  console.log("dist:", dist, " attackRange:", attackRange);
+  //console.log("dist:", dist, " attackRange:", attackRange);
   return dist <= attackRange;
 }
 

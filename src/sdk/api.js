@@ -9,6 +9,7 @@ export async function loadConfig() {
     west: baseConfig.west,
     east: baseConfig.east,
     maxUnits: baseConfig.maxUnits,
+    maxTurn: baseConfig.maxTurn ?? 20,
     turnIntervalMs: baseConfig.turnIntervalMs ?? 5000,
     unitActionIntervalMs: baseConfig.unitActionIntervalMs ?? 500,
     jobs: JOB_DATA,

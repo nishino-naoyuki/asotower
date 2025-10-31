@@ -40,8 +40,8 @@ export function createBattle({ west, east, config, renderer, overlay }) {
 
   const state = createInitialState({ west, east, config, sandbox })
   window.__ASOTOWER_STATE__ = state;
-
-  audioManager.playBgmKey("main");;
+  state.config = config;
+  audioManager.playBgmKey("main");
   const turnIntervalMs = config.turnIntervalMs ?? 5000;
   let timerId = null;
   let effectFrame = null;
