@@ -19,7 +19,7 @@ export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
   var targetX = self.position.x;
   var targetY = self.position.y;
 
-  console.log("Turn:", turn,"enemies length:", enemies.length,"enemyCastle:", enemyCastle);
+  //console.log("Turn:", turn,"enemies length:", enemies.length,"enemyCastle:", enemyCastle);
   if (enemies.length > 0) {
     var nearest = utils.findNearest(self, enemies);
     targetX = nearest.position.x;

@@ -27,7 +27,7 @@ export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
 export function attack(turn, inRangeEnemies, self) {
   //城が射程に入れば攻撃する
   if( utils.isEnemyCastleInRange(self)){
-    return { target: self, method: "CastleAttack" };
+    return { target: self, method: "attackCastle" };
   }else if(inRangeEnemies.length > 0){
     if( utils.hasUsedSkill(self)){
       return { target: inRangeEnemies[0], method: "normal" };

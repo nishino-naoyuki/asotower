@@ -112,7 +112,7 @@ function moveTo(module, state, unit) {
         state.map.castles[unit.side], // 味方城
         unit // 自分
       );
-      console.log(`Moving unit: ${unit.name} to x=${moveTarget.x}, y=${moveTarget.y}`);
+      //console.log(`Moving unit: ${unit.name} to x=${moveTarget.x}, y=${moveTarget.y}`);
       executeCommand(state, unit, { type: 'move', x: moveTarget.x, y: moveTarget.y });
       
     }
@@ -133,10 +133,14 @@ function attack(module, state, unit) {
           });
           executeCommand(state, unit, { type: 'skill', targetId: attackResult.target.id });
           // 城攻撃AI分岐
-        } else if (attackResult && attackResult.method === 'castleattack') {
+        } else if (attackResult && attackResult.method === 'attackCastle') {
           executeCommand(state, unit, { type: 'attackCastle' });
-        } else {
+        } else if (attackResult.method === 'normal') {
           executeCommand(state, unit, { type: 'attack', targetId: attackResult.target.id });
+        } else if( 
+          state.units.filter(u => u.side !== unit.side && u.hp > 0 && !utils.isScoutInSkillMode(u)).length == 0 ) {
+          // 敵ユニットが存在しない場合、城を攻撃する
+          executeCommand(state, unit, { type: 'attackCastle' });
         }
       } else if (utils.isEnemyCastleInRange(unit)) {
         //攻撃指定が無くて城が攻撃範囲にあれば城を攻撃する
