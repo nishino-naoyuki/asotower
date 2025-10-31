@@ -22,7 +22,7 @@ export function doSkill(state, unit, target) {
       defense: 0
     },
     hp: 15,
-    memory: { summonedChampion: { turns: 5 } }
+    memory: { summonedChampion: { turns: 6 } }
   };
   state.units.push(champion);
   unit.memory.summonedChampion = champion.id;

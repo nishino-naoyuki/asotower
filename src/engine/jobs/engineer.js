@@ -38,7 +38,7 @@ export function processSkill(state, unit) {
 export function doSkill(state, unit, target) {
   if (!unit.memory.deployed) {
     unit.memory.deployed = true;
-    unit.memory.turretTurns = 3;
+    unit.memory.turretTurns = 4;
     // タレット召喚（演出）
     queueEffect(state, {
       kind: 'summon',

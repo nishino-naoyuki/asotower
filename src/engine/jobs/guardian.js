@@ -18,7 +18,7 @@ import { queueEffect } from '../actions.js';
 
 export function doSkill(state, unit, target) {
   // 4ターン防御力1.4倍バフ
-  unit.memory.guardBuffTurns = 4;
+  unit.memory.guardBuffTurns = 5;
   unit.memory.originalDefense = unit.stats.defense;
   unit.stats.defense = Math.floor(unit.stats.defense * 1.4);
   queueEffect(state, {

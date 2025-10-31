@@ -29,7 +29,7 @@ import { queueEffect } from '../actions.js';
 
 export function doSkill(state, unit, target) {
   // 元の攻撃力を退避し、1.5倍に設定
-  unit.memory.soldierBuff = { turns: 3, originalAttack: unit.stats.attack };
+  unit.memory.soldierBuff = { turns: 4, originalAttack: unit.stats.attack };
   unit.stats.attack = Math.floor(unit.stats.attack * 1.5);
   queueEffect(state, {
     kind: 'buff',

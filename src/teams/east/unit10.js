@@ -2,7 +2,7 @@ import * as utils from "../../shared/unit-utils.js";
 
 export function init() {
   return {
-    job: "guardian",
+    job: "engineer",
     name: "有原",
     initialPosition: {
       relativeTo: "allyCastle",
@@ -24,8 +24,8 @@ export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
     targetX = nearest.position.x;
     targetY = nearest.position.y;
   } else if (enemyCastle && enemyCastle.position) {
-    targetX = enemyCastle.position.x;
-    targetY = enemyCastle.position.y;
+    targetX = enemyCastle.x;
+    targetY = enemyCastle.y;
   }
 
   return { x: targetX, y: targetY };

@@ -21,7 +21,7 @@ export function processSkill(state, unit) {
 import { queueEffect } from '../actions.js';
 
 export function doSkill(state, unit, target) {
-  unit.memory.stealth = { turns: 2 };
+  unit.memory.stealth = { turns: 3 };
   queueEffect(state, {
     kind: 'buff',
     position: unit.position,

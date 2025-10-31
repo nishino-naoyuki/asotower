@@ -33,7 +33,7 @@ export function isEnemyCastleInRange(self, range = null) {
   return dist <= attackRange;
 }
 
-// state引数で敵城座標を取得
+// 敵城座標を取得
 export function getEnemyCastlePosition(self) {
   const state = window.__ASOTOWER_STATE__;
   if (!state) return null;
@@ -71,6 +71,10 @@ export function findFarthestEnemyPosition(self, enemies) {
   let maxDist = -1;
   let farthest = null;
   for (let i = 0; i < enemies.length; i++) {
+    if( isScoutInSkillMode(enemies[i])) {
+      //ステルス中の敵は除外
+      continue;
+    }
     const dist = distanceBetween(self.position, enemies[i].position);
     if (dist > maxDist) {
       maxDist = dist;
@@ -100,4 +104,15 @@ export function getUnitJob(unit) {
 export function getUnitsByJob(units, jobName) {
   if (!Array.isArray(units)) return [];
   return units.filter(u => u.job === jobName);
+}
+
+export function isScoutInSkillMode(self) {
+  return (
+    self.job === 'scout' &&
+    self.skill &&
+    self.memory &&
+    self.memory.stealth &&
+    typeof self.memory.stealth.turns === 'number' &&
+    self.memory.stealth.turns > 0
+  );
 }
