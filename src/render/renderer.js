@@ -294,6 +294,9 @@ export class Renderer {
         case "heal_special":
           this.drawHealSpecialEffect(ctx, effect, progress);
           break;
+        case "magefire":
+          this.drawMageFireEffect(ctx, effect, progress);
+          break;
         case "move":
           // 移動は画像エフェクトなし
           break;
@@ -305,6 +308,14 @@ export class Renderer {
       }
       ctx.restore();
     });
+  }
+  
+  drawMageFireEffect(ctx, effect, progress) {
+    const magefireImg = this.getImage("map_magefire");
+    if (!magefireImg) return;
+    const tileSize = effect.tileSize || TILE;
+    const center = toTopLeftPixels(effect.position);
+    ctx.drawImage(magefireImg, center.x, center.y, tileSize, tileSize);
   }
 
   drawHealSpecialEffect(ctx, effect, progress) {

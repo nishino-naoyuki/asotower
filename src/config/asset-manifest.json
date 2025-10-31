@@ -13,7 +13,7 @@
   "map": {
     "ground": "map/ground.png",
     "path": "map/path.png",
-    "magefire": "map/mage_fire.png",
+  "magefire": "map/magefire.png",
     "wall": {
       "intact": "map/wall_intact.png",
       "damaged": "map/wall_damaged.png"

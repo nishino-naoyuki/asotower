@@ -5,8 +5,9 @@ import { queueEffect } from '../actions.js';
 import { getAttackableEnemies, computeDamage } from '../rules.js';
 export function doSkill(state, unit, targets) {
   // 半径2マス（ピクセル換算）範囲内の敵全体に攻撃
+  // range はタイル単位で指定する（getAttackableEnemies は位置をタイル単位で扱う）
   const tileSize = state.map?.tileSize || 64;
-  const range = tileSize * 2;
+  const range = 2; // 半径2マス（タイル単位）
   const center = unit.position;
   // 自軍城の位置
   const castle = state.map?.castles?.[unit.side];
@@ -25,9 +26,13 @@ export function doSkill(state, unit, targets) {
       dx = dx / len;
       dy = dy / len;
     }
-    // 逆方向に4マス分移動
-    target.position.x += dx * 4;
-    target.position.y += dy * 4;
+  // 逆方向に4マス分移動（タイル単位）。小数になる可能性があるため四捨五入し、
+  // マップ外にはみ出さないようにクリップする。
+  const knockbackTiles = 4;
+  const nx = Math.round(dx * knockbackTiles);
+  const ny = Math.round(dy * knockbackTiles);
+  target.position.x = Math.max(0, Math.min((state.map?.width || 0) - 1, target.position.x + nx));
+  target.position.y = Math.max(0, Math.min((state.map?.height || 0) - 1, target.position.y + ny));
     queueEffect(state, {
       kind: 'attack',
       position: target.position,

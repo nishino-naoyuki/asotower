@@ -34,8 +34,13 @@ export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
 // 攻撃対象と方法を決める（射程内の敵がいれば最初の1体を通常攻撃）
 export function attack(turn, inRangeEnemies, self) {
   if (inRangeEnemies.length > 0) {
-    var target = inRangeEnemies[0];
-    return { target: target, method: "normal" };
+    if (turn > 2 && !utils.hasUsedSkill(self)) {
+      //周りに複数敵がいる場合はスキル発動
+      return { target: self, method: "skill" };
+    } else {
+      var target = inRangeEnemies[0];
+      return { target: target, method: "normal" };
+    }
   }
   return null;
 }

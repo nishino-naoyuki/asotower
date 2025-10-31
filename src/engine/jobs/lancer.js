@@ -4,19 +4,21 @@ export function processSkill(state, unit) {}
 import { queueEffect } from '../actions.js';
 import { computeDamage, isInRange, getAttackableEnemies } from '../rules.js';
 
+const SKILL_RANGE = 10; // 10マス分のピクセル距離
+
 export function doSkill(state, unit, targets) {
   // 新仕様: 縦横4マスにいる敵すべてに攻撃
   const center = unit.position;
-  // 2タイル分のピクセル距離
-  const range = 2;
+  // 10タイル分のピクセル距離
+  const range = SKILL_RANGE;
   const areaTargets = getAttackableEnemies(state, unit, range);
-
+  console.log("Lancer Skill Targets:", areaTargets);
   if (areaTargets.length === 0) return;
   areaTargets.forEach(target => {
-    if (!isInRange(unit, target)) {
-      state.log.push({ turn: state.turn, message: `${unit.name} の攻撃は届かなかった` });
-      return;
-    }
+    // areaTargets は getAttackableEnemies(state, unit, range) で
+    // 既に拡張レンジでフィルタ済みなので、ここで通常射程の isInRange を
+    // 再度チェックすると、範囲外の敵が弾かれてしまいます。
+    // そのためチェックは不要。対象にダメージを適用する。
     target.memory.reachBreakHit = true;
     const damage = computeDamage(unit, target);
     target.hp = Math.max(0, target.hp - damage);
@@ -43,5 +45,5 @@ export function doSkill(state, unit, targets) {
     durationMs: 800,
     job: unit.job
   });
-  state.log.push({ turn: state.turn, message: `${unit.name}はリーチブレイク！（縦横4マス範囲攻撃）` });
+  state.log.push({ turn: state.turn, message: `${unit.name}はリーチブレイク！（縦横10マス範囲攻撃）` });
 }

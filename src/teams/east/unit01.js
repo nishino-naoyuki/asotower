@@ -2,12 +2,12 @@ import * as utils from "../../shared/unit-utils.js";
 
 export function init() {
   return {
-    job: "assassin",
+    job: "sumo",
     name: "柳田",
     initialPosition: {
       relativeTo: "allyCastle",
       x: 13,
-      y: 1
+      y: 0
     },
     memory: {},
     bonus: { atk: 3, def: 2, spd: 2, hit: 2, hp: 1 }, // 合計10
@@ -33,11 +33,13 @@ export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
 
 // 攻撃対象と方法を決める（射程内の敵がいれば最初の1体を通常攻撃）
 export function attack(turn, inRangeEnemies, self) {
+  console.log("InRangeEnemies:", inRangeEnemies.map(e => e.name),"unitrange:",self.stats.range);
   if (inRangeEnemies.length > 0) {
     //最も近い敵を取得
     var target = utils.findNearest(self, inRangeEnemies);
     
-    if(turn==1){      
+    if(utils.hasUsedSkill(self) == false ){      
+      console.log("Use Skill on", target.name);
       return { target: target, method: "skill" };
     }else{
       return { target: target, method: "normal" };

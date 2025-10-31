@@ -487,6 +487,7 @@ function handleAttackCastle(state, unit) {
 }
 
 function handleSkill(state, unit, command) {
+  console.log(`handleSkill called for unit: ${unit.name} (job: ${unit.job})`);
   if (!unit.skill) {
     state.log.push({ turn: state.turn, message: `${unit.name} には使用可能なスキルがない` });
     return;
@@ -504,6 +505,7 @@ function handleSkill(state, unit, command) {
 
   // ジョブごとのdoSkill呼び出し
   const skillHandler = jobsMap[unit.job];
+  console.log("Skill handler for job", unit.job, ":", skillHandler);
   if (skillHandler && typeof skillHandler.doSkill === 'function') {
     skillHandler.doSkill(state, unit, target);
     unit.skill.used = true;
