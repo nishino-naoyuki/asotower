@@ -13,7 +13,7 @@
   "map": {
     "ground": "map/ground.png",
     "path": "map/path.png",
-  "magefire": "map/magefire.png",
+    "magefire": "map/magefire.png",
     "wall": {
       "intact": "map/wall_intact.png",
       "damaged": "map/wall_damaged.png"
@@ -38,7 +38,8 @@
   "jobs": {
     "monster": {
       "default": "jobs/monster.png",
-      "attack": "jobs/monster_attack.png"
+      "attack": "jobs/monster_attack.png",
+      "smoke": "jobs/monster_smoke.png"
     },
     "soldier": {
       "default": "jobs/soldier.png",

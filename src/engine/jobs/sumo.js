@@ -6,9 +6,7 @@ import { getAttackableEnemies, computeDamage } from '../rules.js';
 export function doSkill(state, unit, targets) {
   // 半径2マス（ピクセル換算）範囲内の敵全体に攻撃
   // range はタイル単位で指定する（getAttackableEnemies は位置をタイル単位で扱う）
-  const tileSize = state.map?.tileSize || 64;
   const range = 2; // 半径2マス（タイル単位）
-  const center = unit.position;
   // 自軍城の位置
   const castle = state.map?.castles?.[unit.side];
   const targetsInRange = getAttackableEnemies(state, unit, range);

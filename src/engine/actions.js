@@ -78,6 +78,7 @@ export function createTurnProcessor(state, config = {}) {
         const unit = turnOrder[index++];
         if (unit.hp <= 0 || state.status.finished) continue;
         const module = unit.module;
+        
         try {
           // --- 移動処理 ---
           moveTo(module, state, unit);
@@ -425,6 +426,7 @@ function handleAttack(state, unit, command) {
   }
 
   const damage = computeDamage(unit, target);
+  const prevHp = target.hp;
   target.hp = Math.max(0, target.hp - damage);
   state.log.push({ turn: state.turn, message: `${unit.name} が ${target.name} に ${damage} ダメージ` });
   const jobSounds = [];
@@ -446,6 +448,11 @@ function handleAttack(state, unit, command) {
     job: unit.job, // 攻撃者のジョブ名を追加
     durationMs: 3000
   });
+
+
+  // 攻撃中の表示切替用フラグ（レンダラーで参照）。duration に合わせて期限を設定する。
+  if (!unit.memory) unit.memory = {};
+  unit.memory.isAttackingUntil = Date.now() + 3000;
 
   queueEffect(state, {
     kind: "impactRing",

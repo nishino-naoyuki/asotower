@@ -5,7 +5,8 @@ import { queueEffect } from '../actions.js';
 
 export function doSkill(state, unit, target) {
   // 味方全員を即時20回復
-  const allies = state.units.filter(u => u.team === unit.team && u.hp > 0);
+  // NOTE: state units use `side` ("west"/"east") not `team`. 使用プロパティの誤りで敵味方両方に適用されていたため修正。
+  const allies = state.units.filter(u => u.side === unit.side && u.hp > 0);
   allies.forEach(target => {
     const before = target.hp;
     target.hp = Math.min(target.stats.hp, target.hp + 20);

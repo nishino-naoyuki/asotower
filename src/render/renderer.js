@@ -218,8 +218,10 @@ export class Renderer {
       const center = toCenterPixels(unit.position);
       let jobSprite;
       if (unit.job === 'monster') {
-        // 攻撃中フラグ（isAttacking）で画像切り替え
-        if (unit.memory?.isAttacking) {
+        // 攻撃中フラグ（isAttacking or isAttackingUntil）で画像切り替え
+        const now = Date.now();
+        const isAttacking = !!(unit.memory?.isAttacking || (unit.memory?.isAttackingUntil && unit.memory.isAttackingUntil > now));
+        if (isAttacking) {
           jobSprite = this.getImage('job_monster_attack');
         } else {
           jobSprite = this.getImage('job_monster');
@@ -291,6 +293,9 @@ export class Renderer {
         case "impactRing":
           this.drawImpactRing(ctx, effect, progress);
           break;
+        case "smoke":
+          this.drawSmokeEffect(ctx, effect, progress);
+          break;
         case "heal_special":
           this.drawHealSpecialEffect(ctx, effect, progress);
           break;
@@ -308,6 +313,25 @@ export class Renderer {
       }
       ctx.restore();
     });
+  }
+
+  drawSmokeEffect(ctx, effect, progress) {
+    // サモナーが召喚したモンスターの消滅エフェクト用
+    const center = toCenterPixels(effect.position);
+    // 優先：job_{job}_smoke を使う（asset-manifest.json の jobs に smoke を置いた場合）
+    if (effect.job) {
+      const imgKey = `job_${effect.job}_smoke`;
+      const sprite = this.getImage(imgKey);
+      if (sprite) {
+        const baseSize = TILE * 2.4;
+        const scale = 1 + 0.25 * Math.sin(progress * Math.PI);
+        const size = baseSize * scale;
+        ctx.drawImage(sprite, center.x - size / 2, center.y - size / 2, size, size);
+        return;
+      }
+    }
+    // フォールバック：汎用エフェクト描画
+    this.drawStockEffect(ctx, effect, progress);
   }
   
   drawMageFireEffect(ctx, effect, progress) {

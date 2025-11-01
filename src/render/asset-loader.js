@@ -33,7 +33,7 @@ export class AssetLoader {
       if (!paths?.default) continue;
       const baseKey = `job_${job}`;
       result[baseKey] = paths.default;
-      for (const variant of ["attack", "skill", "win"]) {
+      for (const variant of ["attack", "skill", "win", "smoke"]) {
         const key = `${baseKey}_${variant}`;
         result[key] = paths[variant] ?? paths.default;
       }
@@ -110,7 +110,7 @@ export class AssetLoader {
   }
 
   getFallbackKey(key) {
-    const match = key.match(/^job_(.+)_(attack|skill|win)$/);
+    const match = key.match(/^job_(.+)_(attack|skill|win|smoke)$/);
     if (!match) return null;
     const baseKey = `job_${match[1]}`;
     return this.manifest[baseKey] ? baseKey : null;

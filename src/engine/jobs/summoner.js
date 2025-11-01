@@ -3,19 +3,29 @@ import { queueEffect } from '../actions.js';
 import * as uutils from '../../shared/unit-utils.js';
 
 // チャンピオン消滅共通処理
-function vanishChampion(state, champ) {
+function vanishChampion(state, champ, reason = 'killed') {
   if (!champ) return;
+  console.log(`vanishChampion: Vanishing champion ${champ.name || champ.id} reason=${reason}`);
+  // 既に消滅処理済みなら再度エフェクトを流さない
+  if (champ.memory?.vanished) return;
+
+  // reason によってサウンドや jobSounds を分ける（期限切れはdown音を鳴らさない）
+  const isKilled = reason === 'killed' || reason === 'ownerDead';
   queueEffect(state, {
     kind: 'smoke',
     position: champ.position,
     source: champ.position,
-    variant: 'disappear',
-    sound: 'monster_down',
-    jobSounds: [{ job: 'monster', kind: 'down' }],
+    variant: isKilled ? 'disappear' : 'expire',
+    sound: isKilled ? 'monster_down' : 'monster_expire',
+    jobSounds: isKilled ? [{ job: 'monster', kind: 'down' }] : [],
     durationMs: 800,
     job: 'monster'
   });
   champ.hp = 0;
+  // 消滅フラグを立て、summonedChampion 情報が残っていれば削除する
+  if (!champ.memory) champ.memory = {};
+  delete champ.memory.summonedChampion;
+  champ.memory.vanished = true;
 }
 
 // チャンピオンを通常ユニットと同じように扱うため、簡易AIモジュールを付与する。
@@ -51,16 +61,17 @@ export function doSkill(state, unit, target) {
     side: unit.side,
     position: { ...summonPos },
     stats: {
-      hp: 40,
+      hp: 100,
       attack: 40,
       speed: 30,
       range: 30,
       vision: 15,
       defense: 40
     },
-    hp: 40,
+    hp: 100,
     // summonedChampion.turns は残存ターン数（生成直後を含め5ターン分稼働させたい）
-    memory: { summonedChampion: { turns: 5 } }
+    // owner を入れて誰が管理しているかを明示する
+    memory: { summonedChampion: { turns: 5, owner: unit.id } , vanished: false }
   };
 
   champion.module = {
@@ -93,6 +104,7 @@ export function processSkill(state, unit) {
       const champId = unit.memory.summonedChampion;
       const champ = state.units.find(u => u.id === champId);
       if (champ) {
+        //console.log(`unit.hp <= 0: Vanishing champion ${champ.name || champ.id} because summoner ${unit.name || unit.id} died`);
         vanishChampion(state, champ);
       }
       delete unit.memory.summonedChampion;
@@ -101,18 +113,32 @@ export function processSkill(state, unit) {
     return;
   }
   // チャンピオン消滅・AI攻撃処理
-  for (const u of state.units) {
-    if (u.job === 'monster' && u.memory?.summonedChampion) {
-      // ターン減算
-      u.memory.summonedChampion.turns--;
-      // 消滅条件
-      if (u.memory.summonedChampion.turns <= 0 || u.hp <= 0) {
-        vanishChampion(state, u);
-        state.log.push({ turn: state.turn, message: `チャンピオンは煙とともに消えた。` });
-        // 実際の除去は外部でhp=0ユニットを除去する処理が走る想定
-        continue;
+  // この関数は各ユニットごとに呼ばれるため、召喚のターン減算は召喚元（summoner）だけが行うようにする。
+  if (unit.memory?.summonedChampion) {
+    const champId = unit.memory.summonedChampion;
+    const champ = state.units.find(u => u.id === champId);
+    if (champ && !champ.memory?.vanished) {
+      // オーナー一致確認（念のため）- champ の memory.summonedChampion.owner が現在の unit.id と一致する場合のみ減算する
+      const ownerId = champ.memory?.summonedChampion?.owner;
+      if (ownerId && ownerId !== unit.id) {
+        // 参照ミスマッチがあれば警告（通常は起きない）。この場合は減算しない。
+        console.log(`processSkill warning: champ ${champ.id} owner mismatch: expected ${ownerId} but triggered by ${unit.id}`);
+        return;
       }
-      // 動作は標準のターン処理（createTurnProcessor 内の moveTo / attack 呼び出し）に任せる。
+      // ターン減算（owner が一致するか owner が未設定の場合のみ）
+      if (champ.memory?.summonedChampion && typeof champ.memory.summonedChampion.turns === 'number') {
+        champ.memory.summonedChampion.turns--;
+      }
+      // 消滅条件
+      const turnsLeft = champ.memory?.summonedChampion?.turns ?? 0;
+      if (turnsLeft <= 0 || champ.hp <= 0) {
+        const expired = turnsLeft <= 0 && champ.hp > 0;
+        //console.log(`processSkill: Vanishing champion ${champ.name || champ.id} because turns ${turnsLeft} or hp ${champ.hp} (expired=${expired})`);
+        vanishChampion(state, champ, expired ? 'timeout' : 'killed');
+        state.log.push({ turn: state.turn, message: expired ? `チャンピオンの召喚時間が終了した。` : `チャンピオンは煙とともに消えた。` });
+        // 召喚者側の参照も削除（参照が一致する場合のみ）
+        if (unit.memory.summonedChampion === champ.id) delete unit.memory.summonedChampion;
+      }
     }
   }
 }

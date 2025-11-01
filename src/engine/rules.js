@@ -19,6 +19,9 @@ export function computeDamage(attacker, defender) {
   const defense = defender.stats.defense;
   let dmg = Math.max(1, attack - defense * 0.5);
 
+  console.log(`computeDamage: base damage from ${attacker.name || attacker.job} to ${defender.name || defender.job} is ${dmg}`);
+
+  // ジョブ相性補正
   const attJob = JOB_DATA[attacker.job];
   const defJob = JOB_DATA[defender.job];
   if (attJob?.affinity?.attack === defender.job) {
@@ -38,7 +41,7 @@ export function computeDamage(attacker, defender) {
   if (Math.random() < critChance) {
     dmg *= 1.5;
   }
-
+  console.log(`computeDamage: final damage from ${attacker.name || attacker.job} to ${defender.name || defender.job} after modifiers is ${dmg}`);
   return Math.floor(dmg);
 }
 
