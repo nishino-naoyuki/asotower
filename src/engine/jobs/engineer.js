@@ -56,15 +56,18 @@ function doSkillProcess(state, unit) {
   enemies.forEach(target => {
     const damage = computeDamage(turret, target);
     target.hp = Math.max(0, target.hp - damage);
+    // 表示：攻撃ラインとインパクトを描画するため attack エフェクトを使用
     queueEffect(state, {
-      kind: 'damage',
+      kind: 'attack',
       position: target.position,
       source: unit.position,
-      variant: 'turret',
-      sound: 'engineer_skill',
-      jobSounds: [{ job: 'engineer', kind: 'skill' }],
-      amount: damage,
-      job: unit.job
+      target: target.position,
+      variant: 'siege',
+      sound: 'engineer_explosion',
+      jobSounds: [{ job: 'engineer', kind: 'explode' }],
+      impactLabel: `${damage}`,
+      job: unit.job,
+      durationMs: 800
     });
     state.log.push({ turn: state.turn, message: `${unit.name}のタレットが${target.name}に${damage}ダメージ！` });
   });

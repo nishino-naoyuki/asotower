@@ -15,7 +15,11 @@
     "hit_default": "sfx/hit_default.mp3",
     "down_default": "sfx/down_default.mp3",
     "super_heal": "sfx/super_heal.mp3",
-    "move": "sfx/move.mp3"
+    "move": "sfx/move.mp3",
+    "monster_expire": "sfx/monster_expire.mp3",
+    "monster_down": "sfx/monster_down.mp3",
+    "engineer_explosion": "sfx/engineer_explosion.mp3",
+    "explosion_default": "sfx/explosion_default.mp3"
   },
   "jobs": {
     "soldier": {
@@ -51,7 +55,8 @@
     "engineer": {
       "hit": "jobs/engineer_hit.mp3",
       "down": "jobs/engineer_down.mp3",
-      "skill": "jobs/engineer_skill.mp3"
+      "skill": "jobs/engineer_skill.mp3",
+      "explode": "jobs/engineer_explode.mp3"
     },
     "summoner": {
       "hit": "jobs/summoner_hit.mp3",
