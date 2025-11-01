@@ -2,11 +2,11 @@ import * as utils from "../../shared/unit-utils.js";
 
 export function init() {
   return {
-    job: "sumo",
+    job: "summoner",
     name: "柳田",
     initialPosition: {
       relativeTo: "allyCastle",
-      x: 13,
+      x: 10,
       y: 0
     },
     memory: {},

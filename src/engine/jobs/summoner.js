@@ -1,5 +1,42 @@
 // サモナー: ミニオンコール（HP40攻撃10のミニオン3体を20秒間召喚）
 import { queueEffect } from '../actions.js';
+import * as uutils from '../../shared/unit-utils.js';
+
+// チャンピオン消滅共通処理
+function vanishChampion(state, champ) {
+  if (!champ) return;
+  queueEffect(state, {
+    kind: 'smoke',
+    position: champ.position,
+    source: champ.position,
+    variant: 'disappear',
+    sound: 'monster_down',
+    jobSounds: [{ job: 'monster', kind: 'down' }],
+    durationMs: 800,
+    job: 'monster'
+  });
+  champ.hp = 0;
+}
+
+// チャンピオンを通常ユニットと同じように扱うため、簡易AIモジュールを付与する。
+// moveTo: 敵がいれば最寄りの敵へ、いなければ敵城へ移動
+// attack: 射程内の敵がいれば通常攻撃を返す
+// ヘルパーを使って見通し良くする
+function chooseChampionMoveTarget(enemies, enemyCastle, self) {
+  if (enemies && enemies.length > 0) {
+    const nearest = uutils.findNearest(self, enemies);
+    if (nearest) return { x: nearest.position.x, y: nearest.position.y };
+  }
+  const castlePos = uutils.getEnemyCastlePosition(self) || enemyCastle;
+  if (castlePos) return { x: castlePos.x, y: castlePos.y };
+  return { x: self.position.x, y: self.position.y };
+}
+
+function chooseChampionAttackTarget(inRangeEnemies, self) {
+  if (!inRangeEnemies || inRangeEnemies.length === 0) return null;
+  const nearest = uutils.findNearest(self, inRangeEnemies);
+  return nearest ? { target: nearest, method: 'normal' } : null;
+}
 
 export function doSkill(state, unit, target) {
   // 既に召喚済みなら何もしない
@@ -14,15 +51,25 @@ export function doSkill(state, unit, target) {
     side: unit.side,
     position: { ...summonPos },
     stats: {
-      hp: 15,
-      attack: 35,
-      speed: 0,
-      range: 15,
+      hp: 40,
+      attack: 40,
+      speed: 30,
+      range: 30,
       vision: 15,
-      defense: 0
+      defense: 40
     },
-    hp: 15,
-    memory: { summonedChampion: { turns: 6 } }
+    hp: 40,
+    // summonedChampion.turns は残存ターン数（生成直後を含め5ターン分稼働させたい）
+    memory: { summonedChampion: { turns: 5 } }
+  };
+
+  champion.module = {
+    moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
+      return chooseChampionMoveTarget(enemies, enemyCastle, self);
+    },
+    attack(turn, inRangeEnemies, self) {
+      return chooseChampionAttackTarget(inRangeEnemies, self);
+    }
   };
   state.units.push(champion);
   unit.memory.summonedChampion = champion.id;
@@ -42,6 +89,12 @@ export function processSkill(state, unit) {
   if (unit.hp <= 0) {
     // サモナー自身の死亡時は召喚効果を即時終了
     if (unit.memory.summonedChampion) {
+      // 召喚したチャンピオンを探して消す
+      const champId = unit.memory.summonedChampion;
+      const champ = state.units.find(u => u.id === champId);
+      if (champ) {
+        vanishChampion(state, champ);
+      }
       delete unit.memory.summonedChampion;
       state.log.push({ turn: state.turn, message: `${unit.name}の召喚効果が死亡により即時終了。` });
     }
@@ -54,46 +107,12 @@ export function processSkill(state, unit) {
       u.memory.summonedChampion.turns--;
       // 消滅条件
       if (u.memory.summonedChampion.turns <= 0 || u.hp <= 0) {
-        queueEffect(state, {
-          kind: 'smoke',
-          position: u.position,
-          source: u.position,
-          variant: 'disappear',
-          sound: 'monster_down',
-          jobSounds: [{ job: 'monster', kind: 'down' }],
-          durationMs: 800,
-          job: 'monster'
-        });
+        vanishChampion(state, u);
         state.log.push({ turn: state.turn, message: `チャンピオンは煙とともに消えた。` });
-        u.hp = 0;
         // 実際の除去は外部でhp=0ユニットを除去する処理が走る想定
         continue;
       }
-      // AI: 射程内の一番近い敵を攻撃
-      const targets = getAttackableEnemies(state, u, u.stats.range );
-      if (targets.length > 0) {
-        // 最も近い敵
-        const target = targets.reduce((a, b) => {
-          const da = Math.hypot(a.position.x - u.position.x, a.position.y - u.position.y);
-          const db = Math.hypot(b.position.x - u.position.x, b.position.y - u.position.y);
-          return da < db ? a : b;
-        });
-        // 攻撃
-        const damage = computeDamage(u, target);
-        target.hp = Math.max(0, target.hp - damage);
-        queueEffect(state, {
-          kind: 'attack',
-          position: target.position,
-          source: u.position,
-          target: target.position,
-          variant: 'monster_attack',
-          sound: 'monster_attack',
-          jobSounds: [{ job: 'monster', kind: 'skill' }],
-          impactLabel: `${damage}`,
-          job: 'monster'
-        });
-        state.log.push({ turn: state.turn, message: `チャンピオンが${target.name}に${damage}ダメージ` });
-      }
+      // 動作は標準のターン処理（createTurnProcessor 内の moveTo / attack 呼び出し）に任せる。
     }
   }
 }
