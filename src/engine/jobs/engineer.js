@@ -32,6 +32,8 @@ export function doSkill(state, unit, target) {
       sound: 'engineer_skill',
       jobSounds: [{ job: 'engineer', kind: 'skill' }],
       durationMs: 1200,
+      // スキルエフェクト（自身表示）であることを示すフラグ
+      skill: 'self',
       job: unit.job
     });
     state.log.push({ turn: state.turn, message: `${unit.name}はタレットを設置した！（3ターン攻撃15/射程20）` });
@@ -67,9 +69,23 @@ function doSkillProcess(state, unit) {
       jobSounds: [{ job: 'engineer', kind: 'explode' }],
       impactLabel: `${damage}`,
       job: unit.job,
+      // このエフェクトはスキルによる攻撃（対象側の表示は skill_flash とする）
+      skill: 'target',
       durationMs: 800
     });
     state.log.push({ turn: state.turn, message: `${unit.name}のタレットが${target.name}に${damage}ダメージ！` });
   });
   unit.memory.turretTurns--;
+}
+
+// 描画用スプライトキーを返す（レンダラから使用）
+export function getSprite(unit) {
+  try {
+    if (unit && unit.memory && unit.memory.turretTurns && unit.memory.turretTurns > 0) {
+      return `job_engineer_skill`;
+    }
+  } catch (e) {
+    // 無視してフォールバックを使う
+  }
+  return `job_engineer`;
 }

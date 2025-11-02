@@ -30,8 +30,16 @@ export function doSkill(state, unit, target) {
     sound: 'scout_skill',
     jobSounds: [{ job: 'scout', kind: 'skill' }],
     durationMs: 800,
-    job: unit.job
+    job: unit.job,
+    skill: 'self'
   });
   state.log.push({ turn: state.turn, message: `${unit.name}はリコンパルス！（2ターンステルス化）` });
+}
+
+export function getSprite(unit) {
+  try {
+    if (unit && unit.memory && unit.memory.stealth && unit.memory.stealth.turns > 0) return `job_scout_skill`;
+  } catch (e) {}
+  return `job_scout`;
 }
 

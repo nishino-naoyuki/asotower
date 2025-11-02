@@ -65,7 +65,6 @@ export function doSkill(state, unit, target) {
       attack: 40,
       speed: 30,
       range: 30,
-      vision: 15,
       defense: 40
     },
     hp: 100,
@@ -84,6 +83,8 @@ export function doSkill(state, unit, target) {
   };
   state.units.push(champion);
   unit.memory.summonedChampion = champion.id;
+  if (!unit.memory) unit.memory = {};
+  unit.memory.summonerSkillTurns = 1;
   queueEffect(state, {
     kind: 'summon',
     position: champion.position,
@@ -92,11 +93,17 @@ export function doSkill(state, unit, target) {
     sound: 'summoner_skill',
     jobSounds: [{ job: 'summoner', kind: 'skill' }],
     durationMs: 1200,
-    job: unit.job
+    job: unit.job,
+    skill: 'self'
   });
   state.log.push({ turn: state.turn, message: `${unit.name}はチャンピオンを召喚！（5ターン限定・HP15攻撃35）` });
 }
 export function processSkill(state, unit) {
+  // 減算：召喚スキルの一時表示ターン
+  if (unit?.memory?.summonerSkillTurns && unit.memory.summonerSkillTurns > 0) {
+    unit.memory.summonerSkillTurns--;
+    if (unit.memory.summonerSkillTurns <= 0) delete unit.memory.summonerSkillTurns;
+  }
   if (unit.hp <= 0) {
     // サモナー自身の死亡時は召喚効果を即時終了
     if (unit.memory.summonedChampion) {
@@ -141,4 +148,11 @@ export function processSkill(state, unit) {
       }
     }
   }
+}
+
+export function getSprite(unit) {
+  try {
+    if (unit && unit.memory && unit.memory.summonerSkillTurns && unit.memory.summonerSkillTurns > 0) return `job_summoner_skill`;
+  } catch (e) {}
+  return `job_summoner`;
 }

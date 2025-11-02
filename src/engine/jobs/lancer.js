@@ -1,10 +1,16 @@
-export function processSkill(state, unit) {}
-
 // ランサー: リーチブレイク（縦列4マス貫通攻撃＋ノックバック）
 import { queueEffect } from '../actions.js';
 import { computeDamage, isInRange, getAttackableEnemies } from '../rules.js';
-
 const SKILL_RANGE = 10; // 10マス分のピクセル距離
+
+export function processSkill(state, unit) {
+  // 瞬間スキル表示ターンを減らす
+  if (unit?.memory?.lancerSkillTurns && unit.memory.lancerSkillTurns > 0) {
+    unit.memory.lancerSkillTurns--;
+    if (unit.memory.lancerSkillTurns <= 0) delete unit.memory.lancerSkillTurns;
+  }
+}
+
 
 export function doSkill(state, unit, targets) {
   // 新仕様: 縦横4マスにいる敵すべてに攻撃
@@ -14,6 +20,8 @@ export function doSkill(state, unit, targets) {
   const areaTargets = getAttackableEnemies(state, unit, range);
   console.log("Lancer Skill Targets:", areaTargets);
   if (areaTargets.length === 0) return;
+  if (!unit.memory) unit.memory = {};
+  unit.memory.lancerSkillTurns = 1;
   areaTargets.forEach(target => {
     // areaTargets は getAttackableEnemies(state, unit, range) で
     // 既に拡張レンジでフィルタ済みなので、ここで通常射程の isInRange を
@@ -32,7 +40,8 @@ export function doSkill(state, unit, targets) {
       sound: 'lancer_skill',
       jobSounds: [{ job: 'lancer', kind: 'skill' }],
       impactLabel: `${damage}`,
-      job: unit.job
+      job: unit.job,
+      skill: 'target'
     });
   });
   queueEffect(state, {
@@ -43,7 +52,15 @@ export function doSkill(state, unit, targets) {
     sound: 'lancer_skill',
     jobSounds: [{ job: 'lancer', kind: 'skill' }],
     durationMs: 800,
-    job: unit.job
+    job: unit.job,
+    skill: 'self'
   });
   state.log.push({ turn: state.turn, message: `${unit.name}はリーチブレイク！（縦横10マス範囲攻撃）` });
+}
+
+export function getSprite(unit) {
+  try {
+    if (unit && unit.memory && unit.memory.lancerSkillTurns && unit.memory.lancerSkillTurns > 0) return `job_lancer_skill`;
+  } catch (e) {}
+  return `job_lancer`;
 }

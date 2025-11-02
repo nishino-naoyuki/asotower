@@ -56,6 +56,8 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function createTurnProcessor(state, config = {}) {
   pruneExpiredEffects(state);
+  // ターン開始ごとに移動予約をクリア
+  state.reservedCells = {};
   // 各ユニットのprocessSkillを毎ターン呼び出し
   for (const unit of state.units) {
     const jobHandler = jobsMap[unit.job];
@@ -287,7 +289,8 @@ function handleMove(state, unit, command) {
   const speed = movementPerTurn(unit);
   const dx = command.x - unit.position.x;
   const dy = command.y - unit.position.y;
-  const distance = Math.hypot(dx, dy);
+  // Chebyshev distance: treat diagonal as cost 1 (grid-friendly)
+  const distance = Math.max(Math.abs(dx), Math.abs(dy));
   //console.log(`handleMove: unit=${unit.name} from (${unit.position.x},${unit.position.y}) to (${command.x},${command.y}), distance=${distance}, speed=${speed}`);
   if (distance === 0) return;
 
@@ -302,35 +305,31 @@ function handleMove(state, unit, command) {
     x: Math.floor(unit.position.x),
     y: Math.floor(unit.position.y)
   };
-  let targetCell = {
-    x: Math.floor(adjusted.x),
-    y: Math.floor(adjusted.y)
-  };
-  const enteringNewCell = currentCell.x !== targetCell.x || currentCell.y !== targetCell.y;
-  //console.log(`Adjusted target after wall check: x=${adjusted.x}, y=${adjusted.y}, targetCell=(${targetCell.x},${targetCell.y}), enteringNewCell=${enteringNewCell}`);
-  let finalTarget = { x: targetCell.x, y: targetCell.y };
-  if (!utils.isScoutInSkillMode(self)) {
-    // 直線上のセルリスト取得
-    const lineCells = getLinePositions(unit.position, finalTarget);
-    // 直線上の敵を判定
+  // 目標セル（整数座標）
+  let targetCell = { x: Math.floor(adjusted.x), y: Math.floor(adjusted.y) };
+
+  // 敵の途中判定・占有判定は整数セルで行う
+  let finalTargetCell = { ...targetCell };
+  if (!utils.isScoutInSkillMode(unit)) {
+    const lineCells = getLinePositions(unit.position, finalTargetCell);
     const enemies = state.units.filter(u => u.side !== unit.side && u.hp > 0);
     const firstEnemyCell = findFirstEnemyOnLine(lineCells, enemies);
     if (firstEnemyCell) {
-      // 敵の1マス手前で止まる
       const idx = lineCells.findIndex(cell => cell.x === firstEnemyCell.x && cell.y === firstEnemyCell.y);
       if (idx > 0) {
-        finalTarget = { x: lineCells[idx - 1].x, y: lineCells[idx - 1].y };
+        finalTargetCell = { x: lineCells[idx - 1].x, y: lineCells[idx - 1].y };
       } else {
-        finalTarget = { x: unit.position.x, y: unit.position.y };
+        finalTargetCell = { x: Math.floor(unit.position.x), y: Math.floor(unit.position.y) };
       }
     }
-    // 目標座標が埋まっている場合はずらし処理
-    if (isOccupiedCell(state, finalTarget, unit)) {
-      finalTarget = findAvailablePosition(state, finalTarget, unit);
+    if (isOccupiedCell(state, finalTargetCell, unit)) {
+      finalTargetCell = findAvailablePosition(state, finalTargetCell, unit);
     }
-    targetCell = finalTarget;
+    targetCell = finalTargetCell;
   }
-  //console.log(`Final target cell after enemy check and occupation check: x=${targetCell.x}, y=${targetCell.y}`);
+
+  const enteringNewCell = currentCell.x !== targetCell.x || currentCell.y !== targetCell.y;
+
   // ずらし処理: 移動先が埋まっている場合はY-1→Y+1→X+1→X-1の順で空きセルを探す
   if (enteringNewCell && isOccupiedCell(state, targetCell, unit)) {
     const directions = [
@@ -355,11 +354,28 @@ function handleMove(state, unit, command) {
       return;
     }
   }
-  const orgpositon = { x: unit.position.x, y: unit.position.y };
-  unit.position.x = targetCell.x;
-  unit.position.y = targetCell.y;
 
-  state.log.push({ turn: state.turn, message: `${unit.name} が${orgpositon.x}, ${orgpositon.y}から${targetCell.x}, ${targetCell.y}へ移動` });
+  const orgpositon = { x: unit.position.x, y: unit.position.y };
+  // 浮動小数座標で移動を反映（蓄積できるようにする）
+  // ただし、最終行き先が整数セル（衝突回避で変更された場合）はそのセル座標にスナップする
+  if (enteringNewCell && (targetCell.x !== Math.floor(adjusted.x) || targetCell.y !== Math.floor(adjusted.y))) {
+    // 衝突回避で別セルに移す場合はセル座標へ移動
+    unit.position.x = targetCell.x;
+    unit.position.y = targetCell.y;
+  } else {
+    unit.position.x = adjusted.x;
+    unit.position.y = adjusted.y;
+  }
+  // 移動先のセルをターン内予約としてマーク（他ユニットが同ターンに同セルへ入らないようにする）
+  try {
+    const resKey = `${Math.floor(unit.position.x)},${Math.floor(unit.position.y)}`;
+    state.reservedCells = state.reservedCells || {};
+    state.reservedCells[resKey] = unit.id;
+  } catch (e) {
+    // 予約失敗でも致命的ではない
+  }
+
+  state.log.push({ turn: state.turn, message: `${unit.name} が${orgpositon.x.toFixed(2)}, ${orgpositon.y.toFixed(2)}から${unit.position.x.toFixed ? unit.position.x.toFixed(2) : unit.position.x}, ${unit.position.y.toFixed ? unit.position.y.toFixed(2) : unit.position.y}へ移動` });
   queueEffect(state, {
     kind: "move",
     position: unit.position,
@@ -403,10 +419,15 @@ function isWallCell(walls, point) {
 function isOccupiedCell(state, position, self) {
   const cellX = Math.floor(position.x);
   const cellY = Math.floor(position.y);
-
-  // scoutがスキル中なら敵ユニットは無視
+  // まずターン内の予約を確認（誰かが既にそのセルを移動先として予約している場合は占有）
+  const key = `${cellX},${cellY}`;
+  const reserved = state.reservedCells ?? {};
+  if (reserved[key] && reserved[key] !== (self && self.id)) {
+    return true;
+  }
+  // スカウトがスキル中は『敵味方関係なく通過可能』が仕様のため、
+  // 予約がなければ false を返して占有判定しない。
   if (utils.isScoutInSkillMode(self)) {
-    console.log("スカウトがスキル中のため、敵ユニットを無視");
     return false;
   }
 

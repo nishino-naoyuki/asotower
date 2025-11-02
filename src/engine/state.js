@@ -26,7 +26,7 @@ export function createInitialState({ west, east, config, sandbox }) {
       // ボーナス加算
       const bonus = initResult.bonus ?? {};
       const stats = { ...job.stats };
-      for (const key of ["hp", "attack", "defense", "speed", "range", "vision"]) {
+      for (const key of ["hp", "attack", "defense", "speed", "range"]) {
         stats[key] = (stats[key] ?? 0) + (bonus[key] ?? 0);
       }
       units.push({
@@ -56,6 +56,9 @@ export function createInitialState({ west, east, config, sandbox }) {
     log: [],
     effects: [],
     effectSeq: 0,
+    // 各ターンの移動予約（キー: "x,y" -> unitId）。
+    // scout のスキル中は通過を許すが、通過後は予約を作るため同ターン中の他移動を防げる。
+    reservedCells: {},
     status: { finished: false, winner: null }
   };
 }

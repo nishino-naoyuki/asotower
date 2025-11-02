@@ -1,4 +1,5 @@
 import { AssetLoader } from "./asset-loader.js?v=202510231119";
+import { getSprite as getJobSprite } from "../engine/jobs/index.js";
 
 const TILE = 32;
 const OVERLAY_HEIGHT = 32;
@@ -227,7 +228,9 @@ export class Renderer {
           jobSprite = this.getImage('job_monster');
         }
       } else {
-        jobSprite = this.getImage(`job_${unit.job}`);
+        // ジョブ側にスプライト決定ロジックを委譲（存在しない場合は job_{job} を返す）
+        const key = getJobSprite(unit) || `job_${unit.job}`;
+        jobSprite = this.getImage(key);
       }
       const unitColor = unit.side === "west" ? COLORS.unitWest : COLORS.unitEast;
       ctx.fillStyle = unitColor;
@@ -363,9 +366,10 @@ export class Renderer {
     const center = toCenterPixels(effect.position);
     let imageKey = "effect_skill_flash";
     // ジョブごとのスキル画像
-    if (effect.kind === "skill" && effect.job) {
-      imageKey = `job_${effect.job}_skill`;
-      const jobSprite = this.getImage(imageKey);
+    // effect.skill === 'self' の場合は自ユニット用の job_{job}_skill を優先して表示する
+    if ((effect.kind === "skill" && effect.job) || effect.skill === 'self') {
+      const imageJobKey = `job_${effect.job}_skill`;
+      const jobSprite = this.getImage(imageJobKey);
       if (jobSprite) {
         const baseSize = TILE * 3;
         const scale = 1 + 0.25 * Math.sin(progress * Math.PI);
@@ -446,6 +450,32 @@ export class Renderer {
     const target = effect.target ? toCenterPixels(effect.target) : toCenterPixels(effect.position);
     const source = effect.source ? toCenterPixels(effect.source) : toCenterPixels(effect.position);
     let imageKey = "effect_impact";
+    // スキル由来の攻撃エフェクトなら対象側には汎用の skill_flash を表示する
+    if (effect.skill === 'target') {
+      const sprite = this.getImage('effect_skill_flash');
+      const baseSize = TILE * 2.2;
+      const scale = 1 + 0.4 * (1 - Math.abs(Math.cos(progress * Math.PI)));
+      const size = baseSize * scale;
+      const alpha = 1 - progress;
+      ctx.save();
+      ctx.globalAlpha *= alpha;
+      if (sprite) {
+        ctx.drawImage(sprite, target.x - size / 2, target.y - size / 2, size, size);
+      } else {
+        const radius = size / 2;
+        const gradient = ctx.createRadialGradient(target.x, target.y, radius * 0.2, target.x, target.y, radius);
+        gradient.addColorStop(0, "rgba(212, 233, 255, 0.95)");
+        gradient.addColorStop(0.65, "rgba(212, 233, 255, 0.6)");
+        gradient.addColorStop(1, "rgba(15, 23, 42, 0)");
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(target.x, target.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+      return;
+    }
+
     // ジョブごとの攻撃画像
     //console.log("drawAttackImpact effect.job:", effect.job);
     if (effect.job) {

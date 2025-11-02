@@ -29,7 +29,15 @@ export function doSkill(state, unit, target) {
     sound: 'guardian_skill',
     jobSounds: [{ job: 'guardian', kind: 'skill' }],
     durationMs: 800,
-    job: unit.job
+    job: unit.job,
+    skill: 'self'
   });
   state.log.push({ turn: state.turn, message: `${unit.name}はフォートレス！（4ターン防御力1.4倍）` });
+}
+
+export function getSprite(unit) {
+  try {
+    if (unit && unit.memory && unit.memory.guardBuffTurns && unit.memory.guardBuffTurns > 0) return `job_guardian_skill`;
+  } catch (e) {}
+  return `job_guardian`;
 }

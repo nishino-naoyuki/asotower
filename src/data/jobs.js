@@ -2,8 +2,8 @@ export const JOB_DATA = {
   soldier: {
     name: "ソルジャー",
     role: "frontline_striker",
-    stats: { hp: 30, attack: 24, defense: 26, speed: 18, range: 18, sight: 24 },
-    attributes: { hp: 30, atk: 24, def: 26, spd: 18, range: 18, sight: 24 },
+  stats: { hp: 28, attack: 48, defense: 32, speed: 12, range: 20 },
+  attributes: { hp: 28, atk: 48, def: 32, spd: 12, range: 20 },
     skill: {
       name: "braveCharge",
       displayName: "ブレイブチャージ",
@@ -28,8 +28,8 @@ export const JOB_DATA = {
   lancer: {
     name: "ランサー",
     role: "midline_piercer",
-    stats: { hp: 22, attack: 28, defense: 18, speed: 24, range: 28, sight: 20 },
-    attributes: { hp: 22, atk: 28, def: 18, spd: 24, range: 28, sight: 20 },
+  stats: { hp: 22, attack: 28, defense: 22, speed: 30, range: 38 },
+  attributes: { hp: 22, atk: 28, def: 22, spd: 30, range: 38 },
     skill: {
       name: "reachBreak",
       displayName: "リーチブレイク",
@@ -53,8 +53,8 @@ export const JOB_DATA = {
   archer: {
     name: "アーチャー",
     role: "ranged_dps",
-    stats: { hp: 20, attack: 26, defense: 16, speed: 22, range: 32, sight: 24 },
-    attributes: { hp: 20, atk: 26, def: 16, spd: 22, range: 32, sight: 24 },
+  stats: { hp: 18, attack: 18, defense: 20, speed: 30, range: 54 },
+  attributes: { hp: 18, atk: 18, def: 20, spd: 30, range: 54 },
     skill: {
       name: "multiShot",
       displayName: "マルチショット",
@@ -78,8 +78,8 @@ export const JOB_DATA = {
   mage: {
     name: "メイジ",
     role: "burst_caster",
-    stats: { hp: 18, attack: 32, defense: 14, speed: 20, range: 28, sight: 28 },
-    attributes: { hp: 18, atk: 32, def: 14, spd: 20, range: 28, sight: 28 },
+  stats: { hp: 26, attack: 32, defense: 24, speed: 28, range: 30 },
+  attributes: { hp: 26, atk: 32, def: 24, spd: 28, range: 30 },
     skill: {
       name: "elementalBurst",
       displayName: "エレメンタルバースト",
@@ -102,8 +102,8 @@ export const JOB_DATA = {
   healer: {
     name: "ヒーラー",
     role: "support_healer",
-    stats: { hp: 26, attack: 14, defense: 22, speed: 20, range: 22, sight: 36 },
-    attributes: { hp: 26, atk: 14, def: 22, spd: 20, range: 22, sight: 36 },
+  stats: { hp: 18, attack: 18, defense: 26, speed: 40, range: 38 },
+  attributes: { hp: 18, atk: 18, def: 26, spd: 40, range: 38 },
     skill: {
       name: "medica",
       displayName: "メディカ",
@@ -127,8 +127,8 @@ export const JOB_DATA = {
   guardian: {
     name: "ガーディアン",
     role: "tank",
-    stats: { hp: 36, attack: 18, defense: 36, speed: 12, range: 14, sight: 24 },
-    attributes: { hp: 36, atk: 18, def: 36, spd: 12, range: 14, sight: 24 },
+  stats: { hp: 36, attack: 14, defense: 54, speed: 8, range: 28 },
+  attributes: { hp: 36, atk: 14, def: 54, spd: 8, range: 28 },
     skill: {
       name: "fortress",
       displayName: "フォートレス",
@@ -151,8 +151,8 @@ export const JOB_DATA = {
   assassin: {
     name: "アサシン",
     role: "melee_burst",
-    stats: { hp: 18, attack: 30, defense: 12, speed: 34, range: 20, sight: 26 },
-    attributes: { hp: 18, atk: 30, def: 12, spd: 34, range: 20, sight: 26 },
+  stats: { hp: 18, attack: 40, defense: 14, speed: 36, range: 32 },
+  attributes: { hp: 18, atk: 40, def: 14, spd: 36, range: 32 },
     skill: {
       name: "shadowStep",
       displayName: "シャドウステップ",
@@ -176,8 +176,8 @@ export const JOB_DATA = {
   engineer: {
     name: "エンジニア",
     role: "utility_artificer",
-    stats: { hp: 24, attack: 20, defense: 20, speed: 18, range: 26, sight: 32 },
-    attributes: { hp: 24, atk: 20, def: 20, spd: 18, range: 26, sight: 32 },
+  stats: { hp: 20, attack: 16, defense: 30, speed: 30, range: 44 },
+  attributes: { hp: 20, atk: 16, def: 30, spd: 30, range: 44 },
     skill: {
       name: "deployTurret",
       displayName: "タレット展開",
@@ -205,8 +205,8 @@ export const JOB_DATA = {
   summoner: {
     name: "サモナー",
     role: "control_summoner",
-    stats: { hp: 22, attack: 18, defense: 16, speed: 18, range: 26, sight: 40 },
-    attributes: { hp: 22, atk: 18, def: 16, spd: 18, range: 26, sight: 40 },
+  stats: { hp: 26, attack: 24, defense: 22, speed: 26, range: 42 },
+  attributes: { hp: 26, atk: 24, def: 22, spd: 26, range: 42 },
     skill: {
       name: "miniOnCall",
       displayName: "ミニオンコール",
@@ -234,8 +234,8 @@ export const JOB_DATA = {
   scout: {
     name: "スカウト",
     role: "recon_striker",
-    stats: { hp: 16, attack: 18, defense: 14, speed: 36, range: 22, sight: 34 },
-    attributes: { hp: 16, atk: 18, def: 14, spd: 36, range: 22, sight: 34 },
+  stats: { hp: 14, attack: 18, defense: 12, speed: 56, range: 40 },
+  attributes: { hp: 14, atk: 18, def: 12, spd: 56, range: 40 },
     skill: {
       name: "reconPulse",
       displayName: "リコンパルス",
@@ -259,8 +259,8 @@ export const JOB_DATA = {
   sumo: {
     name: "相撲レスラー",
     role: "frontline_heavy",
-    stats: { hp: 40, attack: 30, defense: 28, speed: 8, range: 14, sight: 20 },
-    attributes: { hp: 40, atk: 30, def: 28, spd: 8, range: 14, sight: 20 },
+  stats: { hp: 56, attack: 30, defense: 30, speed: 8, range: 16 },
+  attributes: { hp: 56, atk: 30, def: 30, spd: 8, range: 16 },
     skill: {
       name: "dohyo_breaker",
       displayName: "土俵轟砕",

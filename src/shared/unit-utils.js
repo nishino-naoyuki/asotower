@@ -6,7 +6,7 @@ import { rangePerTurn } from "../engine/rules.js";
  */
 export function getDamagedAllies(self) {
   const state = window.__ASOTOWER_STATE__;
-  
+  isScoutInSkillMode
   if (!state) return [];
   const allies = state.units.filter(u => u.side === self.side && u.id !== self.id && u.hp > 0);
   return allies.filter(ally => ally.hp < ally.stats.hp);

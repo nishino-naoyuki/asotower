@@ -6,6 +6,11 @@ import { computeDamage,getAttackableEnemies } from '../rules.js';
 const SKILL_RANGE = 2; // 2マス分のピクセル距離
 
 export function processSkill(state, unit) {
+  // mageSkillTurns の減算（描画用）
+  if (unit?.memory?.mageSkillTurns && unit.memory.mageSkillTurns > 0) {
+    unit.memory.mageSkillTurns--;
+    if (unit.memory.mageSkillTurns <= 0) delete unit.memory.mageSkillTurns;
+  }
   if (unit.hp <= 0) {
     if (unit.memory.mageDot) {
       unit.memory.mageDot.turns = 0;
@@ -30,6 +35,9 @@ export function doSkill(state, unit, targets) {
     turns: 3,
     position: { ...unit.position }
   };
+  // mage 自身のスキル表示管理（継続中表示）
+  if (!unit.memory) unit.memory = {};
+  unit.memory.mageSkillTurns = 3;
   queueEffect(state, {
     kind: 'skill',
     position: unit.position,
@@ -71,11 +79,19 @@ function elementalBurstEffect(state, unit) {
       sound: 'mage_skill',
       jobSounds: [{ job: 'mage', kind: 'skill' }],
       impactLabel: `${damage}`,
-      job: unit.job
+        job: unit.job,
+        skill: 'target'
     });
     state.log.push({ turn: state.turn, message: `${unit.name}のエレメンタルバースト継続ダメージ → ${target.name}に${damage}ダメージ` });
   });
   unit.memory.mageDot.turns--;
+}
+
+export function getSprite(unit) {
+  try {
+    if (unit && unit.memory && ((unit.memory.mageDot && unit.memory.mageDot.turns > 0) || (unit.memory.mageSkillTurns && unit.memory.mageSkillTurns > 0))) return `job_mage_skill`;
+  } catch (e) {}
+  return `job_mage`;
 }
 
 // mageの周囲2タイル分にmagefireエフェクトを追加

@@ -1,4 +1,10 @@
-export function processSkill(state, unit) {}
+export function processSkill(state, unit) {
+  // 瞬間スキル表示ターンを減らす
+  if (unit?.memory?.sumoSkillTurns && unit.memory.sumoSkillTurns > 0) {
+    unit.memory.sumoSkillTurns--;
+    if (unit.memory.sumoSkillTurns <= 0) delete unit.memory.sumoSkillTurns;
+  }
+}
 
 // 相撲レスラー: 土俵轟砕（半径1.5マス体当たり・250%攻撃＋ノックバック2マス・8秒間被ダメ-30%）
 import { queueEffect } from '../actions.js';
@@ -40,7 +46,8 @@ export function doSkill(state, unit, targets) {
       sound: 'sumo_skill',
       jobSounds: [{ job: 'sumo', kind: 'skill' }],
       impactLabel: `${damage}`,
-      job: unit.job
+      job: unit.job,
+      skill: 'target'
     });
     queueEffect(state, {
       kind: 'knockback',
@@ -51,9 +58,12 @@ export function doSkill(state, unit, targets) {
       sound: 'sumo_skill',
       jobSounds: [{ job: 'sumo', kind: 'skill' }],
       durationMs: 600,
-      job: unit.job
+      job: unit.job,
+      skill: 'target'
     });
   });
+  if (!unit.memory) unit.memory = {};
+  unit.memory.sumoSkillTurns = 1;
   queueEffect(state, {
     kind: 'skill',
     position: unit.position,
@@ -62,7 +72,15 @@ export function doSkill(state, unit, targets) {
     sound: 'sumo_skill',
     jobSounds: [{ job: 'sumo', kind: 'skill' }],
     durationMs: 800,
-    job: unit.job
+    job: unit.job,
+    skill: 'self'
   });
   state.log.push({ turn: state.turn, message: `${unit.name}は土俵轟砕！（半径2マス範囲攻撃＋ノックバック4マス）` });
+}
+
+export function getSprite(unit) {
+  try {
+    if (unit && unit.memory && unit.memory.sumoSkillTurns && unit.memory.sumoSkillTurns > 0) return `job_sumo_skill`;
+  } catch (e) {}
+  return `job_sumo`;
 }

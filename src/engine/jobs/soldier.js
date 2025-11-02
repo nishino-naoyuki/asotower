@@ -44,3 +44,10 @@ export function doSkill(state, unit, target) {
   state.log.push({ turn: state.turn, message: `${unit.name}はブレイブチャージ！（3ターン攻撃力1.5倍）` });
 }
 
+export function getSprite(unit) {
+  try {
+    if (unit && unit.memory && unit.memory.soldierBuff && unit.memory.soldierBuff.turns > 0) return `job_soldier_skill`;
+  } catch (e) {}
+  return `job_soldier`;
+}
+
