@@ -15,34 +15,35 @@ export function getAttackableEnemies(state, unit, range = null) {
 import { JOB_DATA } from "../data/jobs.js?v=202510231119";
 
 export function computeDamage(attacker, defender) {
-  const attack = attacker.stats.attack;
-  const defense = defender.stats.defense;
-  let dmg = Math.max(1, attack - defense * 0.5);
+  const attack = Number(attacker?.stats?.attack) || 0;
+  const defense = Number(defender?.stats?.defense) || 0;
 
-  console.log(`computeDamage: base damage from ${attacker.name || attacker.job} to ${defender.name || defender.job} is ${dmg}`);
+  // 基本ダメージ（浮動小数）
+  let dmg = attack - defense * 0.5;
 
-  // ジョブ相性補正
+  // ジョブ相性補正（攻撃側の有利・防御側の脆弱性など）
   const attJob = JOB_DATA[attacker.job];
   const defJob = JOB_DATA[defender.job];
   if (attJob?.affinity?.attack === defender.job) {
     dmg *= 1.2;
   }
-  if (attJob?.affinity?.vulnerable === defender.job) {
-    dmg *= 1.0;
-  }
   if (defJob?.affinity?.vulnerable === attacker.job) {
     dmg *= 1.5;
   }
 
+  // ランダムゆらぎ（±5%程度）
   const jitter = 0.95 + Math.random() * 0.1;
   dmg *= jitter;
 
+  // クリティカル
   const critChance = 0.05;
   if (Math.random() < critChance) {
     dmg *= 1.5;
   }
-  console.log(`computeDamage: final damage from ${attacker.name || attacker.job} to ${defender.name || defender.job} after modifiers is ${dmg}`);
-  return Math.floor(dmg);
+
+  // 最終的に整数化して最低1を保証する（攻撃が発生したら0は返さない）
+  const final = Math.round(dmg);
+  return Math.max(1, final);
 }
 
 export function movementPerTurn(unit) {

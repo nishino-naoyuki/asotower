@@ -22,10 +22,9 @@ export class Overlay {
   renderUnits(units) {
     this.unitDetails.innerHTML = units
       .map((u) => `<div class="unit-row" data-id="${u.id}">
-        <strong>${u.id}</strong> (${u.job}) HP: ${u.hp}
+        <strong>${u.name}</strong> (${u.job}) HP: ${u.hp} pos: (${Math.floor(u.position.x)}, ${Math.floor(u.position.y)})
       </div>`)
       .join("");
-
     this.unitDetails.querySelectorAll(".unit-row").forEach((el) => {
       el.addEventListener("click", () => {
         const id = el.getAttribute("data-id");
