@@ -7,7 +7,7 @@ export const JOB_DATA = {
     skill: {
       name: "braveCharge",
       displayName: "ブレイブチャージ",
-      description: "一直線に突撃し、最初に命中した敵へ攻撃力200%のダメージを与え1マス吹き飛ばす。",
+      description: "3ターン攻撃力1.5倍。",
       type: "active",
       usage: "once",
       effect: {
@@ -33,7 +33,7 @@ export const JOB_DATA = {
     skill: {
       name: "reachBreak",
       displayName: "リーチブレイク",
-      description: "長槍を振り抜き前方扇形2マスの敵に150%ダメージと防御-20%のデバフを与える。",
+      description: "周辺10マスへ貫通攻撃。",
       type: "active",
       usage: "cooldown",
       cooldownMs: 12000,
@@ -58,7 +58,7 @@ export const JOB_DATA = {
     skill: {
       name: "multiShot",
       displayName: "マルチショット",
-      description: "射程内の最大3体へ同時に矢を放ち、それぞれに攻撃力130%のダメージを与える。",
+      description: "射程内の敵に、それぞれ70%威力の攻撃。",
       type: "active",
       usage: "cooldown",
       cooldownMs: 14000,
@@ -83,7 +83,7 @@ export const JOB_DATA = {
     skill: {
       name: "elementalBurst",
       displayName: "エレメンタルバースト",
-      description: "指定地点を中心に半径2マスへ3属性の爆裂を起こし、範囲内の敵へ攻撃力220%のダメージ。",
+      description: "半径2マスに3ターン攻撃力20の範囲継続ダメージ。",
       type: "active",
       usage: "once",
       effect: {
@@ -107,7 +107,7 @@ export const JOB_DATA = {
     skill: {
       name: "medica",
       displayName: "メディカ",
-      description: "味方単体を即時150回復し、弱体効果をすべて解除。さらに5秒間徐々に回復する。",
+      description: "味方全員を即時20回復（全体回復）",
       type: "active",
       usage: "cooldown",
       cooldownMs: 10000,
@@ -120,7 +120,7 @@ export const JOB_DATA = {
     },
     affinity: {
       vulnerable: "assassin",
-      strongAgainst: [],
+      strongAgainst: ["mage"],
       weakAgainst: ["assassin"]
     }
   },
@@ -132,7 +132,7 @@ export const JOB_DATA = {
     skill: {
       name: "fortress",
       displayName: "フォートレス",
-      description: "8秒間、被ダメージ-40%と挑発状態になり、周囲2マスの敵の攻撃対象を自身に向けさせる。",
+      description: "4ターン防御力1.4倍。",
       type: "active",
       usage: "once",
       effect: {
@@ -156,7 +156,7 @@ export const JOB_DATA = {
     skill: {
       name: "shadowStep",
       displayName: "シャドウステップ",
-      description: "敵背後へ瞬間移動し、攻撃力220%の背面攻撃を行い、2秒間スタンを与える。",
+      description: "瞬時に2マス移動し背後から200%ダメージ。",
       type: "active",
       usage: "cooldown",
       cooldownMs: 15000,
@@ -181,7 +181,7 @@ export const JOB_DATA = {
     skill: {
       name: "deployTurret",
       displayName: "タレット展開",
-      description: "指定地点に砲台を設置。砲台は15秒間、射程20で毎秒攻撃力80%の砲撃を行う。",
+      description: "3ターン射程20マス、攻撃力15の砲台設置。",
       type: "active",
       usage: "cooldown",
       cooldownMs: 18000,
@@ -209,8 +209,8 @@ export const JOB_DATA = {
   attributes: { hp: 26, atk: 24, def: 22, spd: 26, range: 42 },
     skill: {
       name: "miniOnCall",
-      displayName: "ミニオンコール",
-      description: "ミニオン2体を召喚し、10秒間敵を攻撃させる。ミニオンは攻撃力90%の遠隔攻撃を行う。",
+      displayName: "チャンピオンコール",
+      description: "HP100・攻撃40のチャンピオン1体を5ターン召喚。",
       type: "active",
       usage: "cooldown",
       cooldownMs: 20000,
@@ -239,7 +239,7 @@ export const JOB_DATA = {
     skill: {
       name: "reconPulse",
       displayName: "リコンパルス",
-      description: "広域索敵を行い、半径4マスの敵を6秒間可視化し、最も近い敵に攻撃力160%ダメージ。",
+      description: "2ターンステルス化（敵に攻撃されない、移動時に敵をすり抜ける）",
       type: "active",
       usage: "cooldown",
       cooldownMs: 12000,
@@ -264,7 +264,7 @@ export const JOB_DATA = {
     skill: {
       name: "dohyo_breaker",
       displayName: "土俵轟砕",
-      description: "半径1.5マスへ体当たりし命中した敵に攻撃力250%ダメージとノックバック2マス。自身は8秒間被ダメージ-30%。",
+      description: "半径2マス範囲の敵全体に攻撃＋ノックバック4マス。",
       type: "active",
       usage: "once",
       effect: {

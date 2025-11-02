@@ -67,261 +67,327 @@
 - ロジック: filterでjobプロパティ一致ユニットのみ抽出。
 
 ---
-# プログラム内部仕様書（運営・開発者向け）
+# プログラム内部仕様書（開発者向け・最新版）
 
-## 1. 全体概要
-- ブラウザ実行の純ES Modulesベース対戦型タワーディフェンス。
-- 学生は1ユニット=1ファイルを所定フォルダに配置するのみで参加。
-- 運営はフォルダへコピー → `team-map.json` 更新 → ブラウザで「戦闘開始」ボタンを押下。
+この文書は開発者／運営がリポジトリの内部実装を理解し、拡張・運用するための詳細仕様書です。ソースコード（主に `src/` 配下）を参照して作成しています。実装箇所への参照ファイル名を明示しているので、必要箇所は該当ソースを直接確認してください。
 
-## 2. ディレクトリ構成（2025年10月現在）
+目次
+1. プログラムの概要  
+2. フォルダ構成  
+3. 設定ファイル（一覧表）  
+4. 実行方法（2パターン）  
+5. 運用方法（学生に作らせるファイルと配置）  
+6. ゲームフロー（チームロード→終了）  
+7. 描画について（技術詳細）  
+8. 便利関数（API／ユーティリティ関数一覧）
 
-### 主なjs/jsonファイルの役割一覧
+---
 
-| ファイルパス | 種類 | 説明 |
-|---|---|---|
-| src/main.js | js | アプリ全体の初期化・UI結線 |
-| src/styles.css | css | 画面全体のスタイル定義 |
-| src/config/asset-manifest.json | json | 画像・音声などアセットの一覧管理 |
-| src/config/team-map.json | json | チーム編成・ユニット配置情報 |
-| src/data/jobs.js | js | ジョブごとのステータス・スキル定義 |
-| src/data/map.js | js | マップサイズ・城・壁などの定義 |
-| src/engine/actions.js | js | ユニットの行動（移動・攻撃等）処理 |
-| src/engine/game-engine.js | js | ゲーム全体の進行・ループ管理 |
-| src/engine/rules.js | js | ダメージ計算・射程判定などルール処理 |
-| src/engine/state.js | js | ゲーム状態管理（ユニット・城・ターン等） |
-| src/engine/jobs/*.js | js | 各ジョブのスキル・特殊処理 |
-| src/render/renderer.js | js | Canvas描画・バトル画面表示 |
-| src/render/ui-overlay.js | js | サイドパネル・ログ・ユニット詳細表示 |
-| src/render/controls.js | js | 再生/停止/ステップ等の操作UI |
-| src/render/asset-loader.js | js | 画像・音声アセットのプリロード |
-| src/render/audio-manager.js | js | 音声再生・BGM/SE管理 |
-| src/render/replay-recorder.js | js | リプレイ記録（未実装） |
-| src/sdk/api.js | js | ゲームAPI・外部連携 |
-| src/sdk/sandbox.js | js | サンドボックス実行・安全対策 |
-| src/sdk/validator.js | js | ユニットファイルの検証・警告 |
-| src/shared/unit-position.js | js | 初期配置座標の計算ロジック |
-| src/shared/unit-utils.js | js | ユニット操作の便利関数群 |
-| src/assets/audio/audio-manifest.json | json | 音声アセット一覧・設定 |
-| src/teams/east/unit01.js〜unit10.js | js | 東軍ユニットAI（各自作成） |
-| src/teams/west/unit01.js〜unit10.js | js | 西軍ユニットAI（各自作成） |
-```
-README.md
-doc/
+## 1. プログラムの概要
+
+本プロジェクトはブラウザ上で動作する純ES Modulesベースのターン制対戦シミュレータ（いわゆる対戦型タワーディフェンス/自律エージェント競技プラットフォーム）です。各チーム（east/west）はユニットAIを所定のファイルで実装して配置し、運営がブラウザから「戦闘開始」を押すことで試合が開始されます。
+
+主な特徴
+- ターン制：1ターンは全ユニットの行動解決（行動順は速度降順→スロット順）
+- ローカル完結：ブラウザ内でシミュレーション完結（サーバー不要）
+- サンドボックス：外部危険APIを遮断した安全な実行環境を用意（`src/sdk/sandbox.js`）
+- 拡張可能：ジョブ（職業）ごとの固有ロジックやアセットは追加可能（`src/engine/jobs/`、`src/config/asset-manifest.json`）
+
+参照実装ファイル（抜粋）
+- 初期化/起動: `src/main.js`
+- ゲーム進行: `src/engine/game-engine.js`
+- ルール: `src/engine/rules.js`
+- 状態管理: `src/engine/state.js`
+- レンダリング: `src/render/renderer.js`
+- UI/ログ: `src/render/ui-overlay.js`
+- 操作UI: `src/render/controls.js`
+- サンドボックス/検証: `src/sdk/sandbox.js`, `src/sdk/validator.js`
+
+---
+
+## 2. フォルダ構成（主要ファイル・役割）
+
 src/
-  ├─ index.html
-  ├─ main.js
-  ├─ styles.css
-  ├─ assets/
-  │    ├─ images/
-  │    │    ├─ castle/
-  │    │    ├─ jobs/
-  │    │    ├─ map/
-  │    │    ├─ sfx/
-  │    │    └─ ui/
-  │    └─ audio/
-  │         ├─ audio-manifest.json
-  │         ├─ bgm/
-  │         ├─ jobs/
-  │         └─ sfx/
-  ├─ config/
-  │    ├─ asset-manifest.json
-  │    └─ team-map.json
-  ├─ data/
-  │    ├─ jobs.js
-  │    └─ map.js
-  ├─ engine/
-  │    ├─ actions.js
-  │    ├─ game-engine.js
-  │    ├─ rules.js
-  │    ├─ state.js
-  │    └─ jobs/
-  │         ├─ archer.js
-  │         ├─ assassin.js
-  │         ├─ engineer.js
-  │         ├─ guardian.js
-  │         ├─ healer.js
-  │         ├─ index.js
-  │         ├─ lancer.js
-  │         ├─ mage.js
-  │         ├─ scout.js
-  │         ├─ soldier.js
-  │         ├─ summoner.js
-  │         ├─ sumo.js
-  ├─ render/
-  │    ├─ asset-loader.js
-  │    ├─ audio-manager.js
-  │    ├─ controls.js
-  │    ├─ renderer.js
-  │    ├─ replay-recorder.js
-  │    └─ ui-overlay.js
-  ├─ sdk/
-  │    ├─ api.js
-  │    ├─ sandbox.js
-  │    └─ validator.js
-  ├─ shared/
-  │    ├─ unit-position.js
-  │    └─ unit-utils.js
-  ├─ teams/
-  │    ├─ east/
-  │    │    ├─ unit01.js
-  │    │    ├─ unit02.js
-  │    │    ├─ unit03.js
-  │    │    ├─ unit04.js
-  │    │    ├─ unit05.js
-  │    │    ├─ unit06.js
-  │    │    ├─ unit07.js
-  │    │    ├─ unit08.js
-  │    │    ├─ unit09.js
-  │    │    └─ unit10.js
-  │    └─ west/
-  │         ├─ unit01.js
-  │         ├─ unit02.js
-  │         ├─ unit03.js
-  │         ├─ unit04.js
-  │         ├─ unit05.js
-  │         ├─ unit06.js
-  │         ├─ unit07.js
-  │         ├─ unit08.js
-  │         ├─ unit09.js
-  │         └─ unit10.js
-```
+- assets/
+  - images/            : 画像アセット（castle/, jobs/, map/, effects/, ui/ 等）
+  - audio/             : 音声アセット（audio-manifest.json、bgm/、jobs/、sfx/）
+- config/
+  - asset-manifest.json: 画像アセットのマニフェスト（レンダラ/ローダが参照）
+  - team-map.json      : チーム編成・スロット設定（どのユニットファイルを使うか）
+- data/
+  - jobs.js            : ジョブ定義（ステータス・スキル仕様等）
+  - map.js             : マップ定義（width/height/walls/castles 等）
+- engine/
+  - game-engine.js     : 試合の進行制御・チーム読み込み（`loadTeams`,`createBattle` 等）
+  - actions.js         : 移動・攻撃・スキル等の実行ロジック（エンジン内部コマンド）
+  - rules.js           : 射程/ダメージ計算/移動換算などの基準ロジック
+  - state.js           : 初期状態生成・ターン進行時の状態更新
+  - jobs/              : 各ジョブの固有実装（例: engineer.js）
+- render/
+  - renderer.js        : Canvas描画・エフェクト管理（描画順序・オーバーレイ描画）
+  - ui-overlay.js      : サイドパネル、イベントログ、ユニット情報の表示・イベント処理
+  - controls.js        : 操作バー（Startボタン等）、UIイベントとエミッタ接続
+  - asset-loader.js    : 画像プリロード
+  - audio-manager.js   : audio-manifest 読込・SE/BGM再生
+  - replay-recorder.js : リプレイ記録（骨組み。UI統合は未接続）
+- sdk/
+  - api.js             : AI向け公開APIラッパー/設定ロード
+  - sandbox.js         : ユニットファイルを安全に実行するサンドボックス
+  - validator.js       : ユニットファイル・team-map 検証ロジック
+- shared/
+  - unit-utils.js      : 汎用ユーティリティ（距離計算など）
+  - unit-position.js   : initialPosition の forward/lateral→絶対座標変換
+- teams/
+  - east/, west/       : 各チームのユニットファイル（unit01.js 〜 unit10.js）
 
+ツール
+- tools/: テストスクリプト（ダメージ計算/移動シミュ等）
 
-## 3. 起動・ビルド
-以下のいずれかの方法で起動できます（両方を実行する必要はありません）。
+---
 
-**方法A: Python簡易サーバー**
-- リポジトリ直下で `python3 -m http.server --directory src 8000` を実行し `/src` を配信。
-- Codespaces等では自動転送されたポート (例: `https://<workspace>-8000.preview.app.github.dev/`) へアクセス。
+## 3. 設定ファイル（主要設定名・説明・既知のデフォルト）
 
-**方法B: VS Code Live Server**
-- VS Code でリポジトリを開き、拡張機能「Live Server」（Ritwick Dey）を導入。
-- `src/index.html` を右クリックし **Open with Live Server** を選択し、`http://127.0.0.1:5500/src/index.html` へアクセス。
+以下は開発時に参照すべき主要設定（ファイル）と、コードベースで期待されるキー及び既知のデフォルト値／例です。実際の値は `src/config/*.json` や `src/data/*.js` を確認してください。
 
-## 4. 試合開始フロー
-1. `main.js` が `sdk/api.js` 経由で `config/team-map.json`・`data/jobs.js`・`data/map.js` を読み込みUIへ反映。
-2. 「戦闘開始」で `loadTeams()` が `teams/west|east` からボットを動的 import（全ファイル名は `unitXX.js` に統一）。
-3. `sdk/validator.js` が `init`, `moveTo`, `attack` の存在と戻り値を検証。ボーナス合計10超過や配置重複は警告・除外。
-4. 正常なら `engine/game-engine.js` の `startMatch()` が初期状態を生成しループ開始。
-5. `init` が返す `name` はユニット表示名として保持し、未指定時はJOBキーを利用。
-6. `init` の `initialPosition` は「自軍城基準」が原則（forward/lateral/x/y指定）。x/yのみ指定時は絶対座標。
+- src/data/map.js（既知の内容）
+  | 設定名 | 説明 | 既知の値（デフォルト / リポジトリ現在値） |
+  |---|---:|---|
+  | width | マップ幅（タイル数） | 30 |
+  | height | マップ高さ（タイル数） | 15 |
+  | walls | 壁の座標配列（{x,y,hp}） | []（コメント化あり） |
+  | castles.west / castles.east | 城の座標 | west: {x:1,y:7}, east: {x:29,y:7} |
+  | castles.westHp / castles.eastHp | 城の初期HP | 100 / 100 |
 
+- src/config/team-map.json（チーム編成）
+  | 設定名 | 説明 | 既知の想定デフォルト/例 |
+  |---|---:|---|
+  | maxUnits | チームの最大ユニット数 | 10 |
+  | turnIntervalMs | ターン間のインターバル（UI再描画待ち等） | 500 (ms) |
+  | unitActionIntervalMs | ユニット行動間インターバル | 1000 (ms) |
+  | tileSize | 1マスあたりのピクセル | 64 |
+  | west[] / east[] | スロット配列（{slot,file,job,initialPosition}） | 配列形式（各要素に file/job/initialPosition） |
 
-## 5. ゲームループ
-- ターン制（1ターン=全ユニットのAIコマンド実行）。
-- 毎ターン、`createTurnProcessor` により行動順（速度降順→スロット昇順）でユニットを処理。
-- 各ユニットについて：
-  1. ジョブごとの `processSkill` を呼び出し（パッシブ効果等）。
-  2. 各ユニットのmoveTo、attackメソッドを呼び出して行動を決定する。
-  3. コマンド種別（移動・攻撃・スキル・城攻撃）に応じて `actions.js` で実行。
-  4. 移動は壁・混雑判定、攻撃は射程・ダメージ計算（`rules.js`）、スキルはジョブごとのdoSkill。
-  5. 実行結果に応じてエフェクト（攻撃軌跡・ヒット・撃破・城陥落等）を `queueEffect` で登録。
-  6. ログ（移動・攻撃・スキル・失敗・エラー等）を記録。
-- 全ユニット処理後、ターン数を進め、勝敗判定（城HP0で終了、引き分け判定あり）。
-- エフェクトはターン進行と並行して描画・音声再生。
+- src/config/asset-manifest.json（アセット参照）
+  | 設定名 | 説明 | 例 |
+  |---|---:|---|
+  | basePath | 画像アセットの基準パス | "./assets/images" |
+  | castles.west.default / damaged | 城スプライト | "castle/fort_west.png" |
+  | map.ground / map.wall.intact | マップタイル・壁スプライト | "map/ground.png" |
+  | jobs.<job>.default/attack/skill/win | ジョブ別スプライトパス | "jobs/engineer.png" 等 |
+  - 注: `render/asset-loader.js` はこの manifest を参照して `src/assets/images/**` からロードします。
 
-## 6. 描画・UI
-- `render/renderer.js` が Canvas を更新。攻撃は軌跡・ヒットエフェクト・城攻撃演出を描画。
-- `ui-overlay.js` が右パネル（ユニット詳細）・ログ更新、`controls.js` が再生/停止・ステップ・速度操作とリプレイ制御。
-- ユニットをクリックするとサイドパネルに詳細情報（JOB、HP、座標、ボーナス加算後ステータス等）が表示される。
-- 画面構成は `doc/display.md` に準拠。
-- コピペ例やサンプルコードはそのまま動かない場合がある旨を注意書きで表示。
+- src/data/jobs.js（ジョブ定義）
+  | 設定名 | 説明 | 例 |
+  |---|---:|---|
+  | <jobName>.speed | ユニットの速度（行動順） | 数値（速度÷10で移動換算） |
+  | <jobName>.hp | 最大HP | 数値 |
+  | <jobName>.skill | スキル仕様（cooldown等） | オブジェクト |
+  - 注: jobs.js はジョブの基礎数値とスキルパラメータを提供。`src/engine/jobs/` にジョブ固有の演出/処理があればそれを併用。
 
+（上表は実装参照用の要約です。厳密な値は各ファイルを確認してください。）
 
-## 7. SDK API（AIユニット用）
-- ユニットAIは `moveTo`, `attack`, `init` などの関数を実装。
-- コマンド生成時、以下のAPIが利用可能：
-  - `actions.moveToward(x, y)`：速度÷10で目的地へ移動（壁・混雑判定あり）。
-  - `actions.attack(target)`：射程内の敵ユニットへ攻撃。
-  - `actions.attackCastle()`：射程内の敵城へ攻撃。
-  - `actions.useSkill(target?)`：スキル発動（試合1回のみ、ジョブごとにdoSkill実装）。
-- 補助関数（`utils`）:
-  - `findClosest(list, origin)`：最も近いユニット/座標を取得。
-  - `distance(a, b)`：2点間の距離（ユークリッド距離）。
-  - `distanceBetween(a, b)`：2点間の距離（タイル単位、`unit-utils.js` 実装）。
-  - `findNearest(self, units)`：自分から最も近いユニットを取得（`unit-utils.js` 実装）。
-  - `inRange(self, enemy)`：射程判定。
-  - `stepToward(from, to)`：1ステップ分だけ目標方向へ座標を進める。
-  - `closestEnemy(view)` / `closestAlly(view)`：最寄りの敵/味方ユニット取得。
-  - `distanceToEnemyCastle(view)` / `distanceToAllyCastle(view)`：城までの距離。
-  - `remainingEnemies(view)` / `remainingAllies(view)`：残存ユニット数。
-  - その他、`src/shared/unit-utils.js` に追加した汎用関数も利用可能。
-- `state.memory` は `init` で返したオブジェクトを参照・更新可能（ターン間で情報保持）。
-- `update`/`moveTo`/`attack` などのAI関数は毎ターン呼ばれ、コマンドを返す。
-- スキルは `actions.useSkill` で発動し、ジョブごとのdoSkillで効果・エフェクトを実装。
-- 注意：API仕様は `doc/forstudent.md` と常に同期。サンプルコードはバージョン差異に注意。
+---
 
-## 8. サンドボックス・安全対策
-- `sdk/sandbox.js` で危険API禁止、ホワイトリストimportのみ許可。
-- `validator.js` がグローバル汚染や未定義戻り値を検知。
-- `update` 実行にはタイムアウトを設け、無限ループを防止。
+## 4. 実行方法（2パターン）
 
-## 9. ログ・リプレイ
-- ターン毎のログはブラウザ内メモリに保持し、オーバーレイに表示。
-- イベントログには攻撃結果、スキル使用、移動失敗、城/壁ダメージ、エラー、バリデータ警告（ボーナス超過・配置重複など）も表示。
-- ファイルへの恒久保存やダウンロード出力は未実装（`ReplayRecorder` の骨組みのみ存在）。
+A. Python 簡易サーバ（推奨：軽量）
+1. リポジトリルートでターミナルを開く（devcontainer内は Ubuntu 24.04）  
+2. 次を実行：
+   $ python3 -m http.server --directory src 8000  
+3. ブラウザで http://localhost:8000/ を開く（または Codespaces のポート公開先を利用）
 
+B. VS Code Live Server（開発向け）
+1. VS Code 拡張 "Live Server" をインストール  
+2. `src/index.html` を右クリック → "Open with Live Server"  
+3. 表示されたローカルURLで動作確認
 
-## 10. 入力ファイル管理
+起動時の流れ（簡易）
+- ブラウザが `src/index.html` を読み込み、`src/main.js` が実行される。  
+- `main.js` は `sdk/api.js` を用いて `config/team-map.json` / `data/jobs.js` / `data/map.js` を読み込み、アセットプリロードを待ってUIを初期化します。
 
-### src/config/team-map.json
-| 値 | 説明 | 設定例 |
-| --- | --- | --- |
-| maxUnits | チーム編成人数（既定10） | 10 |
-| turnIntervalMs | 1ターンの間隔（ms） | 500 |
-| unitActionIntervalMs | ユニットごとの行動間隔（ms） | 1000 |
-| tileSize | 1マスのピクセルサイズ | 64 |
-| west[]/east[] | チームスロット配列（ファイル名・ジョブ・初期配置） | { "slot": 1, "file": "unit01.js", "job": "guardian", "initialPosition": { "x": 0, "y": 0 } } |
+---
 
-### src/config/asset-manifest.json
-| 値 | 説明 | 設定例 |
-| --- | --- | --- |
-| basePath | 画像アセットの基準パス | "./assets/images" |
-| castles.west/east.default/damaged | 城画像（通常/損傷） | "castle/fort_west.png" |
-| map.ground/path/magefire/wall.intact/damaged | マップ・壁画像 | "map/ground.png" |
-| effects.skill_flash/impact | エフェクト画像 | "sfx/skill_flash.png" |
-| ui.button.play/pause/step | UIボタン画像 | "ui/button_play.png" |
-| ui.hp_bar.bg/fill | HPバー画像 | "ui/hp_bar_bg.png" |
-| ui.skill_icon | スキルアイコン画像 | "ui/skill_icon.png" |
-| jobs.<job>.default/attack/skill/win | ジョブごとのアイコン・演出画像 | "jobs/soldier.png" |
+## 5. 運用方法（学生向けファイル配置ルール・運営手順）
 
-### src/assets/audio/audio-manifest.json
-| 値 | 説明 | 設定例 |
-| --- | --- | --- |
-| bgm.<key>.path | BGMファイルパス | "bgm/main_theme.mp3" |
-| bgm.<key>.loop | BGMループ再生フラグ | true |
-| sfx.<key> | 汎用効果音ファイルパス | "sfx/impact.mp3" |
-| jobs.<job>.hit/down | ジョブごとの被弾/撃破サウンド | "jobs/soldier_hit.mp3" |
+学生に作成させるファイル
+- 各ユニットAI（1ユニット = 1ファイル）:
+  - 命名規則: `unitNN.js` （NN は 01〜10 など）
+  - 配置先: `src/teams/east/` または `src/teams/west/`
+  - 必須実装:
+    - export function init(state) { return { name: "...", memory: {} } }  // 初期化（name と memory optional）
+    - export function update(state) { return actionObject }  // 毎ターン呼ばれる（move/attack/useSkill 等）
+  - 実行環境: `src/sdk/sandbox.js` により安全化される。グローバルの直接参照や危険APIは制限される。
 
-## 11. 追加タスク案
-- 乱数シード入力UI。
-- `scripts/smoke-test.html` 等による自動整合テスト。
-- 評価指標出力（城ダメージ、撃破数など）。
+運営の配置手順
+1. 学生から受け取った `unitNN.js` を該当チームフォルダにコピー（`src/teams/east/` または `src/teams/west/`）  
+2. `src/config/team-map.json` の対応スロットにファイル名・job・initialPosition を設定  
+3. ブラウザでページを再読み込みし、`戦闘開始` をクリックして試合を実行
 
-## 12. 学生向け仕様との整合
-- `doc/job.md` のステータス・スキル値・速度÷10計算をエンジンが参照。
-- `doc/forstudent.md` で公開しているAPI仕様は `sdk/api.js` と常に同期。
+検証（自動チェック）
+- `src/sdk/validator.js` がユニットの必須関数（init/update 等）や初期配置の重複、ボーナス設定の異常を検知し、ログに警告を出します。運営はログを確認して不正/非互換ユニットを除外可能です。
 
-## 13. アセット配置
-- 画像は `src/assets/images/` 以下に用途別格納。
-  - `castle/`：自軍・敵軍城スプライト（損傷段階差分があれば演出に使用）。
-  - `jobs/`：各JOBアイコン（通常・スキル発動時などバリエーション）。
-  - `map/`：床タイル、壁テクスチャ、通路、障害物など。
-  - `effects/`：スキルエフェクト、攻撃ヒットなどの演出素材。
-  - `ui/`：ボタン、HPバー、ステータス表示などUI用画像。
-- 任意追加：投射物アイコンなど追加エフェクトを `effects/` に配置。
-- 音声は `src/assets/audio/` に配置。
-  - `bgm/`：試合BGM。`audio-manifest.json` の `loop` フラグで単発／ループを制御。
-  - `sfx/`：攻撃・スキルなど汎用効果音。`hit_default` などのデフォルトキーを必ず定義。
-  - `jobs/`：ジョブ固有の被弾/撃破サウンド。存在チェック後に再生される。
-  - 追加が必要な場合は `audio-manifest.json` にキーを追記し、`audio-manager.js` がプリロード。
-- `render/renderer.js` および `audio-manager.js` でプリロード管理し、試合開始前に読み込み完了を待つ。
+---
 
-## 14. 配置・登録制限
-- 初期配置座標は自軍陣地20マス以内（西軍: x0–19、東軍: x20–39）に限定。
-- 初期配置マスはユニット間で重複不可。`validator` とエンジンが衝突を検知。
-- チーム人数は既定10人（`config/team-map.json.maxUnits` で変更可）。不足・超過は試合開始前に警告してブロック。
-- 各ユニットファイルは一意のファイル名と `init` / `update` の必須実装が必要。
-- `init` で宣言したJOBは `jobs.json` に存在するもののみ有効。未定義JOBは試合開始を停止し警告。
-- スキルはエンジン側で1試合につき1回のみ許可し、複数回返された場合は無効化してログに記録。
+## 6. ゲームフロー（内部処理の詳細・図解）
+
+以下は実装に基づく内部フローの要点（`src/engine` 関連）と簡易図です。
+
+1) 初期化フェーズ
+- main.js → loadTeams()（`src/engine/game-engine.js`）: team-map.json を読み、各ユニットファイルを dynamic import
+- validator.js により各ユニットの API（init/update）が検証
+- createInitialState（`src/engine/state.js`）でユニット位置・城HP・ターンカウンタ等を初期化
+
+2) ターンループ（startMatch / tick）
+- ループ開始（UI の Start からトリガ）
+- 各ターン:
+  - ユニットリストを行動順（速度降順、同速度時はスロット昇順）にソート
+  - 各ユニットについて:
+    1. `engine/jobs/<job>.processSkill`（パッシブや毎ターン処理）を走らせる（存在する場合）
+    2. サンドボックス内でユニットの `update(stateView)` を呼び出し、アクション（move/attack/useSkill 等）を取得
+    3. `engine/actions.js` がコマンドを検証・実行（移動は `rules.js` で壁/衝突チェック、攻撃は射程とダメージ計算）
+    4. 実行結果は `state` を更新し、必要なら `render/renderer.js` へエフェクト登録（`queueEffect` 等）
+    5. ログへイベントを追加（攻撃結果、スキル使用、移動失敗、例外等）
+  - ターン終了後、勝敗判定（城HP <= 0 など）。勝敗が確定すればループ終了・勝利演出へ
+
+簡易フローチャート（ASCII）
+main.js
+  ↓
+load config & assets
+  ↓
+loadTeams() → validator → createInitialState
+  ↓
+Start ボタン → game-engine.startMatch()
+  ↓
+[Turn Loop]
+  → sort units by speed
+  → for each unit:
+      - process job passive
+      - sandbox: call update()
+      - actions.execute(command)
+      - update state, queue effects, append log
+  → check win/next turn
+  ↓
+End (display result)
+
+状態とビューの分離
+- エンジンは内部 `state`（ユニット/城/ターン/ログ）を保持
+- `render/renderer.js` は `state` のスナップショットを受け取り描画。エフェクトはキューを持ち時間で変化させる
+
+非同期／タイミング注意点
+- 描画・アニメーション・音声はターン進行と平行して行われる。`turnIntervalMs` 等の設定で UI 側の間隔調整を行っている想定（config 参照）。
+
+---
+
+## 7. 描画について（技術詳細）
+
+レンダラ: `src/render/renderer.js`
+- Canvas を使った2D描画。マップサイズに応じてキャンバスをリサイズしてピクセル比を維持。
+- スプライト管理:
+  - `render/asset-loader.js` が `src/config/asset-manifest.json` を基に画像をプリロード
+  - `renderer.js` はジョブスプライトを得るために `src/engine/jobs/index.js` の `getSprite` 等を参照（job固有差し替え対応）
+- 描画順（既実装）:
+  1. 背景（地面タイル）
+  2. ゾーン（レーンハイライト等）
+  3. 壁（wall tiles）
+  4. 城（castle スプライト）
+  5. ユニット（スプライト・向き）
+  6. マップオーバーレイ（例: メイジファイア等）
+  7. エフェクト（弾道・ヒット・命中リング）
+  8. 勝利演出 / UI オーバーレイ
+- ユニットの描画情報:
+  - 座標はマップ座標（タイル基準）→ ピクセル位置に変換（tileSize）
+  - アニメーションはフレーム単位で切替、状態（attack/skill/win）によるスプライト差し替え
+- UIオーバーレイ:
+  - `ui-overlay.js` が右パネル（選択ユニット情報）と下部ログを管理
+  - 上部操作バーは `controls.js` が DOM を監視し、Start ボタンは接続済み。再生/停止/ステップ等はハンドラがコメントアウトされている（未接続）
+
+エフェクトと音声
+- エフェクトはレンダラ内キューで時間制御（duration, delay）
+- `audio-manager.js` が `src/assets/audio/audio-manifest.json` を fetch してプリロードし、エフェクト発生時に指定キーのSEを再生
+
+パフォーマンス考慮
+- 大規模マップや多エフェクト時は draw コール削減（スプライトシート／オフスクリーンバッファ）を検討
+- 現状視点は固定で、スクロール/ズームは未実装 → ビュー変換は単純化されている
+
+---
+
+## 8. 便利関数（ゲーム内ユーティリティ／API）
+
+以下はエンジンと AI 実装で頻用されるユーティリティ関数（`src/shared/unit-utils.js`、`src/shared/unit-position.js`、`src/engine/rules.js` 等で提供）。関数名・引数・戻り値・処理の概要を示します。実装の詳細は該当ファイルを参照してください。
+
+- distanceBetween(a, b)
+  - 概要: 2点間のユークリッド距離を返す
+  - 引数: a:{x,y}, b:{x,y}
+  - 戻り値: 数値（浮動小数）
+  - 処理: dx,dy の平方和の平方根
+
+- findNearest(self, units)
+  - 概要: units 配列から最も近いユニットを返す（自分との距離で判定）
+  - 引数: self (ユニットオブジェクト), units (ユニット配列)
+  - 戻り値: ユニットオブジェクト（最も近いもの）または null
+  - 処理: 線形探索で distanceBetween を用いて最小値を選択
+
+- findFarthestEnemyPosition(self, enemies)
+  - 概要: 最も遠い敵ユニットの座標を返す
+  - 引数: self, enemies
+  - 戻り値: {x,y} または null
+  - 処理: 最大距離の敵ユニットを探索してその position を返す
+
+- getEnemyCastlePosition(self, map)
+  - 概要: 自軍 side を判定して敵城の座標を返す
+  - 引数: self (ユニット), map (MAP_DATA)
+  - 戻り値: {x,y}
+  - 処理: self.side を参照して map.castles.east/west を返す
+
+- hasUsedSkill(unit)
+  - 概要: ユニットがスキルを既に使ったかを判定
+  - 引数: unit
+  - 戻り値: boolean
+  - 処理: unit.skill?.used フラグ参照
+
+- getUnitPosition(unit)
+  - 概要: ユニットの現在座標を返す
+  - 引数: unit
+  - 戻り値: {x,y}（存在しない場合は null）
+
+- getUnitHp(unit)
+  - 概要: 現在HPを返す
+  - 引数: unit
+  - 戻り値: 数値（hp）
+
+- getUnitJob(unit)
+  - 概要: ジョブ名（文字列）を返す
+  - 引数: unit
+  - 戻り値: string
+
+- getUnitsByJob(units, jobName)
+  - 概要: 指定ジョブのユニットだけを抽出する filter
+  - 引数: units (配列), jobName (string)
+  - 戻り値: フィルタ済ユニット配列
+
+- inRange(self, target)
+  - 概要: 攻撃可能か（射程判定）
+  - 引数: self, target
+  - 戻り値: boolean
+  - 処理: rules.js の射程計算ルール（射程 ÷ 10 マス換算 等）を使用
+
+- stepToward(from, to)
+  - 概要: 1ステップ分だけ from を to 方向へ移動させた座標を返す（速度換算外）
+  - 引数: from:{x,y}, to:{x,y}
+  - 戻り値: {x,y}
+
+AI 向け公開 API（`src/sdk/api.js` 経由）
+- actions.moveToward(x,y) : 移動コマンドを生成（移動先は壁/混雑判定により実行結果が変わる）
+- actions.attack(targetId)  : ターゲットへの攻撃コマンド
+- actions.attackCastle() : 敵城への攻撃（射程内でのみ有効）
+- actions.useSkill([target]) : スキル発動コマンド（ジョブごとのdoSkillと連携）
+- utils.findClosest / utils.distance / utils.closestEnemy などの補助関数群
+
+---
+
+補足・注意事項
+- リプレイ機能は `src/render/replay-recorder.js` の骨組みが存在しますが、UI との統合は未完です。必要であれば game-engine 側でイベント記録フックを追加してください。
+- asset manifest / audio manifest に基づくアセットの追加は、manifest にエントリを追加し `src/assets/images` / `src/assets/audio` にファイルを置くことで機能します。`asset-loader` と `audio-manager` がプリロードします。
+- 仕様変更や新ジョブ追加時は必ず `src/data/jobs.js` と `src/engine/jobs/` を同期させてください。
+
+以上。必要があれば特定モジュール（例: game-engine の startMatch 内部、rules.js のダメージ計算式）を抜粋して更に深堀りした資料を出します。

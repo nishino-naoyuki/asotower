@@ -2,15 +2,15 @@ import * as utils from "../../shared/unit-utils.js";
 
 export function init() {
   return {
-    job: "summoner",
+    job: "lancer",
     name: "柳田",
     initialPosition: {
       relativeTo: "allyCastle",
-      x: 10,
+      x: 6,
       y: 0
     },
     memory: {},
-    bonus: { atk: 3, def: 2, spd: 2, hit: 2, hp: 1 }, // 合計10
+    bonus: { atk: 0, def: 0, spd: 0, hit: 0, hp: 10 }, // 合計10
   };
 }
 

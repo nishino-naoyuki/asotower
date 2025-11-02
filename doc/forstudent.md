@@ -1,200 +1,259 @@
+# 学生向けプログラム仕様（詳しい必須関数説明）
 
-# 学生向けプログラム仕様
+このファイルは中学生でもわかるように、できるだけやさしく丁寧に書いています。特に必須実装関数（init / moveTo / attack）について、引数・返り値を細かく説明します。まずはサンプルを動かしてから読み返してください。
 
-## 1. やること
-1. ユニット1体につき **JavaScriptファイル（unit01.js〜unit10.js）を1つ**作成する。
-2. ファイルは `src/teams/west` または `src/teams/east` フォルダに配置する。
-3. ファイル名は `unit01.js`〜`unit10.js` のいずれか（重複不可）。
-4. ファイル内で `init`, `moveTo`, `attack` の3関数を必ずexportする。
-5. `init`で `job`, `name`, `initialPosition`, `bonus`（合計10まで）などを設定する。
+目次
+1. このゲームの概要  
+2. ゲームの勝利条件（優先順）  
+3. やること（学生が行う作業）  
+4. 必須実装関数（詳しく）  
+　4.1 init（小見出し付きで詳細）  
+　4.2 moveTo（引数を丁寧に説明）  
+　4.3 attack（戻り値を用途別に詳述）  
+5. 便利関数（src/shared/unit-utils.js）  
+6. サンプル（init / moveTo / attack）  
+7. 補足
 
-## 2. 必須テンプレート（コメント付きサンプル）
-````javascript
-// 自分のユニットを初期化する関数（試合開始時に1回だけ呼ばれる）
+---
+
+## 1．このゲームの概要
+ブラウザで動く対戦シミュレーションです。左右のチーム（east / west）がユニットを出し合い、相手の城（castle）を壊した方が勝ちになります。あなたはユニット1体の「頭（プログラム）」を書きます。
+
+---
+
+## 2．ゲームの勝利条件（優先順位）
+1. どちらかの城のHPが0になったら即終了。  
+   - 片方だけ0なら相手の勝ち。両方0なら引き分け。  
+2. ターン上限（デフォルト20ターン）で終了した場合：  
+   - 城の残りHPが多い側が勝ち。  
+   - 同じなら生存ユニット数で判定。  
+   - それでも同数なら引き分け。
+
+---
+
+## 3．やること（学生が行う作業）
+- ユニット1体につき1ファイル（例: unit01.js）を作る。  
+- ファイルを src/teams/east/ または src/teams/west/ に置く。  
+- ファイルは必ず次の関数を export する： init, moveTo, attack。  
+
+---
+
+## 4．必須実装関数（詳しく）
+
+この節では関数ごとに「関数名」「引数」「戻り値」を表にして、さらにフィールドや使い方を丁寧に説明します。
+
+### 4.1 init — 試合開始時に1回呼ばれる関数
+
+- 関数名
+  | 項目 | 値 |
+  |---:|---|
+  | 関数名 | init |
+
+- 引数
+  | 引数名 | 型 | 説明 |
+  |---:|---:|---|
+  | context | Object | ゲーム開始時に渡される情報。自身の陣営(side)、マップ情報(map)、城情報などを含む。 |
+
+  context に含まれる主な項目（代表例）
+  - context.side: "east" または "west"（自分のチーム）
+  - context.map: MAP_DATA（src/data/map.js の内容）
+  - context.allyCastle / context.enemyCastle: 城の座標情報（存在する場合）
+  - context.slot: team-map.json でのスロット番号（あれば）
+
+- 戻り値（必ずオブジェクトを返す）
+  | 戻り値フィールド | 型 | 必須 | 詳細説明 |
+  |---:|---:|:---:|---|
+  | job | string | 必須 | 使用する職業名（src/data/jobs.js にある正しい名前）。例: "engineer" |
+  | name | string | 任意 | 画面に表示する名前（省略可） |
+  | initialPosition | Object | 任意（指定しないと team-map.json の設定が優先される） | ユニットの初期位置指定（下で詳述） |
+  | bonus | Object | 任意 | 追加パラメータ（攻撃力や速度など）。合計値は運営ルールで制限あり（通常は合計10以内を推奨） |
+  | memory | Object | 任意 | ユニット固有の保存領域。以後のターンでも値が保持される |
+
+- initialPosition の指定方法（必ず「相対指定」を使うこと）
+  - 理由: ユニットがどちらのチーム（east/west）として配置されるかは運営設定に依存するため、絶対座標は使わないでください。必ず自軍城（allyCastle）を基準にした相対指定を行ってください。
+  - 記述例:
+    - { relativeTo: "allyCastle", forward: 3, lateral: 0 }
+      - relativeTo: "allyCastle"（必須） — 自軍城を基準にすることを示す
+      - forward: 正の整数 — 自軍城から見て前方へ何マス離すか（自軍の向きに依存）
+      - lateral: 整数（負/正可） — 横方向のずれ（右/左）
+  - エンジン側でこの相対指定を絶対座標に変換して配置します。例: 自軍城の前方3マス、横0で配置されます。
+
+- init の返却例（相対指定）
+  - { job: "engineer", name: "エンジニアA", initialPosition: { relativeTo: "allyCastle", forward: 3, lateral: 0 }, bonus: { atk: 1 }, memory: {} }
+
+---
+
+### 4.2 moveTo — 毎ターン「どこへ行くか」を返す関数
+
+- 関数名
+  | 項目 | 値 |
+  |---:|---|
+  | 関数名 | moveTo |
+
+- 引数（重要）
+  | 引数名 | 型 | 説明 |
+  |---:|---:|---|
+  | turn | number | 現在のターン番号（1,2,3...） |
+  | enemies | Array | 敵ユニットの配列。各要素はユニットオブジェクト（id, position, hp, job, side, ...） |
+  | allies | Array | 味方ユニットの配列 |
+  | enemyCastle | Object | 敵城の情報（通常は { position: {x,y}, hp: N } の形） |
+  | allyCastle | Object | 自軍城の情報（同上） |
+  | self | Object | 自分のユニット情報（position, hp, job, memory, skill 状態など） |
+
+- ユニットオブジェクト（例）
+  - {
+      id: 1,
+      name: "unit01",
+      job: "engineer",
+      side: "east",
+      position: { x: 3, y: 7 },
+      hp: 100,
+      memory: { ... }
+    }
+
+- 戻り値（目標座標）
+  | 型 | 例 | 説明 |
+  |---:|---:|---|
+  | Object | { x: number, y: number } | ユニットが向かう「目標座標」を返す。エンジンが速度や壁を考慮して実際の移動を行う。 |
+
+- 城の位置の取得方法（例）
+  - 引数の enemyCastle.position を使うのが簡単で確実。
+  - 例: const castlePos = enemyCastle?.position; → castlePos.x / castlePos.y を参照。
+  - 引数がない場合は、init で渡された context.map を参照して map.castles を見る手もあるが、通常は引数の enemyCastle を使ってください。
+
+- 敵の位置の取得方法（例）
+  - enemies 配列を使う:
+    - 敵がいれば enemies[0].position などで座標を得られる。
+    - よく使う便利関数: findNearest(self, enemies) → 最も近い敵のオブジェクトを返す。
+  - 例コード:
+    - if (enemies && enemies.length > 0) { const target = findNearest(self, enemies); return { x: target.position.x, y: target.position.y }; }
+
+- 実用アドバイス
+  - moveTo では「目的地」を返すだけで良い。壁や速度はエンジンが処理する。  
+  - 敵がいないときは enemyCastle を目標にするのが基本戦略。
+
+---
+
+### 4.3 attack — 射程内で攻撃を決める関数
+
+- 関数名
+  | 項目 | 値 |
+  |---:|---|
+  | 関数名 | attack |
+
+- 引数
+  | 引数名 | 型 | 説明 |
+  |---:|---:|---|
+  | turn | number | 現在のターン |
+  | inRangeEnemies | Array | 射程内にいる敵の配列（空なら攻撃対象なし） |
+  | self | Object | 自分のユニット情報（position, hp, job, memory, skill 状態など） |
+
+- inRangeEnemies の中身
+  - 各要素は敵ユニットオブジェクト（id, position, hp, job, side など）。これをそのまま target に渡せば良い。
+
+- 戻り値（詳細）
+  - 基本: オブジェクトを返すか、攻撃しない場合は null を返す。
+
+  1) 通常攻撃（normal）
+    - 形式: { target: <enemyObject>, method: "normal" }
+    - 使い方: 最も基本的な攻撃。射程内の敵を指定して返す。
+    - 例: return { target: inRangeEnemies[0], method: "normal" };
+
+  2) スキルを使う（skill）
+    - 形式: { target: <enemyObject|null>, method: "skill", params?: {...} }
+    - 使い方: ジョブ固有の特別技を使う指示。対象が不要なスキル（自己バフ等）なら target に null を渡す。
+    - 注意: スキルの可否（クールダウンや使用回数）は engine/job 実装側で管理される。self.skill.used 等で確認できることがある。
+    - 例（単体スキル）: return { target: inRangeEnemies[0], method: "skill" };
+
+  3) 城を攻撃する（attackCastle）
+    - 形式: { method: "attackCastle" } または { target: null, method: "attackCastle" }
+    - 使い方: 敵城を直接攻撃したいときに使う。ユニットが城の射程内であれば有効。
+    - 例: return { method: "attackCastle" };
+
+- 実装のコツ
+  - inRangeEnemies が空なら null を返す。  
+  - スキルは強力だが制限があることが多いので、self.skill.used を確認してから使う。  
+  - 城攻撃は enemyCastle の位置を確認してから命令すると安全（引数で渡される enemyCastle.position を参照）。
+
+---
+
+## 5．便利関数（src/shared/unit-utils.js の主な関数）
+よく使う関数を一覧にします。使い方例も短く示します。
+
+| 関数名 | 引数 | 戻り値 | 使用例 |
+|---|---:|---|---|
+| distanceBetween(a, b) | a:{x,y}, b:{x,y} | 数値（距離） | d = distanceBetween(self.position, enemy.position) |
+| findNearest(self, units) | self, units:配列 | 最も近いユニット または null | t = findNearest(self, enemies) |
+| findFarthestEnemyPosition(self, enemies) | self, enemies | {x,y} または null | pos = findFarthestEnemyPosition(self, enemies) |
+| getEnemyCastlePosition(self, map) | self, map | {x,y} | castlePos = getEnemyCastlePosition(self, MAP_DATA) |
+| hasUsedSkill(unit) | unit | boolean | if (!hasUsedSkill(self)) { /* スキル使える */ } |
+| getUnitPosition(unit) | unit | {x,y} | pos = getUnitPosition(enemy) |
+| getUnitHp(unit) | unit | 数値 | hp = getUnitHp(enemy) |
+| getUnitJob(unit) | unit | 文字列 | job = getUnitJob(self) |
+| getUnitsByJob(units, jobName) | units, jobName | 配列 | eng = getUnitsByJob(allies, "engineer") |
+| stepToward(from, to) | from:{x,y}, to:{x,y} | {x,y} | next = stepToward(self.position, targetPos) |
+
+---
+
+## 6．サンプル（init / moveTo / attack）
+下をそのままコピーして src/teams/east/unit01.js に保存してください。init の初期配置は必ず相対指定にしてください（絶対座標を使わない）。
+
+```javascript
+// filepath: src/teams/east/unit01.js
+
+// init は試合開始時に1回だけ呼ばれます
 export function init(context) {
   return {
-    job: 'archer',                      // 使用するJOB（doc/job.md参照）
-    name: 'ユニット太郎',               // 画面に表示したい名前（未指定ならJOB名）
+    job: "engineer", // data/jobs.js の職名を指定
+    name: "エンジニア01",
+    // 初期位置は必ず自軍城基準の相対指定にする
     initialPosition: {
-      relativeTo: 'allyCastle', //自軍の城を基準とした位置で配置するという意味
-      x: 3, //自軍の城からｘ方向にどれだけ離れた位置に配置するか（この例では３マス）
-      y: -1 //自軍の城からy方向にどれだけ離れた位置に配置するか（この例ではー１マス）
+      relativeTo: "allyCastle", // 自軍城を基準に配置する指定（必須）
+      forward: 3,               // 自軍城から前方へ3マス
+      lateral: 0                // 横ずれ（右が正、左が負）
     },
-    // パラメーターボーナス（任意）
-    // 合計10まで。job.mdの正式パラメータ名のみ有効
-    bonus: {
-      atk: 3,   // 攻撃力+3
-      def: 2,   // 防御力+2
-      spd: 2,   // 速度+2
-      hit: 2,   // 命中+2
-      hp: 1     // HP+1
-      // 合計10まで。job.mdのパラメータ名以外は無効
-    },
-    memory: { lastTargetId: null }
+    bonus: { atk: 0 },
+    memory: {}
   };
 }
 
----
-// どこに移動するか決める（最も近い敵がいればその座標、いなければ敵城）
+// moveTo: 毎ターン「どこへ向かうか」を返す
 export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
-  // デフォルトは現在地
-  var targetX = self.position.x;
-  var targetY = self.position.y;
-
-  if (enemies.length > 0) {
-    // 最も近い敵の座標へ移動
-    var nearest = utils.findNearest(self, enemies);
-    targetX = nearest.position.x;
-    targetY = nearest.position.y;
-  } else if (enemyCastle && enemyCastle.position) {
-    // 敵がいなければ敵城へ向かう
-    targetX = enemyCastle.position.x;
-    targetY = enemyCastle.position.y;
+  // 敵がいれば最も近い敵へ向かう
+  if (enemies && enemies.length > 0) {
+    const nearest = findNearest(self, enemies) || enemies[0];
+    return { x: nearest.position.x, y: nearest.position.y };
   }
-
-  return { x: targetX, y: targetY };
+  // 敵がいなければ敵城へ向かう（enemyCastle があればそれを使う）
+  if (enemyCastle && enemyCastle.position) {
+    return { x: enemyCastle.position.x, y: enemyCastle.position.y };
+  }
+  // それ以外はその場に留まる
+  return { x: self.position.x, y: self.position.y };
 }
 
-// 攻撃対象と方法を決める
+// attack: 射程内の敵がいるときに呼ばれる
 export function attack(turn, inRangeEnemies, self) {
-  if (inRangeEnemies.length > 0) {
-    var target = inRangeEnemies[0];
-    // methodは"normal"で通常攻撃
-    return { target: target, method: "normal" };
+  if (!inRangeEnemies || inRangeEnemies.length === 0) return null;
+
+  // HP が低い敵を狙う簡単なロジック
+  let target = inRangeEnemies.reduce((a, b) => (a.hp < b.hp ? a : b), inRangeEnemies[0]);
+
+  // もしスキルが使えて体力が十分ならスキル
+  if (!hasUsedSkill(self) && self.hp > 30) {
+    return { target, method: "skill" };
   }
-  // 射程内に敵がいなければ攻撃しない
-  return null;
+
+  // 普通の攻撃
+  return { target, method: "normal" };
 }
-````
-
-## 3. 実装関数の説明
-
-### init関数
-**説明**
-試合開始時に1回だけ呼ばれ、ユニットの初期設定（ジョブ・名前・初期位置・ボーナス・記憶領域など）を返す関数です。
-
-**init関数の引数**
-
-| 引数名   | 型      | 説明                                      |
-|----------|--------|-------------------------------------------|
-| context  | object | 試合開始時の情報（自城・敵城・マップサイズ等）|
-
-**戻り値（オブジェクト）**
-| キー              | 型      | 説明                                      |
-|-------------------|--------|-------------------------------------------|
-| job               | string | 使用するジョブ名（archer等）              |
-| name              | string | ユニット表示名（任意）                    |
-| initialPosition   | object | 初期配置座標（絶対座標またはオフセット）   |
-| bonus             | object | パラメーターボーナス（合計10まで）         |
-| memory            | object | ユニットごとの記憶領域（任意）            |
-
-【パラメーターボーナスについて】
-  - `init`関数の戻り値で `bonus` オブジェクトを指定すると、該当ユニットのステータスに加算されます。
-  - 指定可能なキーは `doc/job.md` の正式パラメータ名（例: atk, def, spd, hit, hp, range など）です。
-  - ボーナス値の合計は「最大10」まで。超過した場合は、そのユニットは戦闘に参加できません（エンジン・バリデータで除外されます）。
-  - 不正なキー（job.mdに存在しないパラメータ名）は無効です。
-  - ボーナス値は正の整数のみ有効です。未指定の場合はJOBの基本値のみが適用されます。
-  - 詳細は `doc/job.md` を参照してください。
-
-
-### moveTo関数
-**説明**
-毎ターン呼ばれ、ユニットが「どこに移動するかの目標」を決めるための関数です。敵や城の位置を見て移動先座標を返します。ユニットは目標座標にむかって速度パラメータの分移動します。
-
-**moveTo関数の引数**
-
-| 引数名         | 型        | 説明                                      |
-|---------------|----------|-------------------------------------------|
-| turn          | number   | 現在のターン数                            |
-| enemies       | array    | 敵ユニットの配列                          |
-| allies        | array    | 味方ユニットの配列                        |
-| enemyCastle   | object   | 敵城の情報（座標・HPなど）                |
-| allyCastle    | object   | 自城の情報（座標・HPなど）                |
-| self          | object   | 自分自身の情報（座標・ステータスなど）    |
-
-**戻り値（表形式解説）**
-
-| キー | 型    | 説明                       |
-|------|-------|----------------------------|
-| x    | number| 移動先の目標x座標（マップ上）   |
-| y    | number| 移動先の目標y座標（マップ上）   |
-
-移動先の目標座標（x, y）をオブジェクトで返します。あくまで指定するのは目標の座標であり、指定した座標にワープするわけではありません。目標座標に向かってユニットごとに指定された速度分移動します
-
-
-**戻り値の例**
-
-> ※下記は「例」です。コピペしてもそのまま動くわけではありません。実際の座標値は状況に応じて変わります。
-
-1. 敵ユニットの座標を目標として移動する場合（例：最も近い敵が変数nearestの場合）
-```js
-{ x: nearest.position.x, y: nearest.position.y }
-```
-
-2. 敵城の座標を目標として移動する場合
-```js
-{ x: enemyCastle.position.x, y: enemyCastle.position.y }
-```
-
-3. その場に留まる場合（移動しない）
-```js
-{ x: self.position.x, y: self.position.y }
 ```
 
 ---
 
+## 7．補足
+- initialPosition は必ず相対指定で書いてください（絶対座標は禁止）。これはユニットが east／west のどちらに割り当てられるか運営側で決まるためです。  
+- moveTo と attack の戻り値は形式を守ればエンジンが正しく処理します。  
+- エラーはブラウザ Console に出ます。動かないときはまず Console を確認してください。
 
-### attack関数
-**説明**
-毎ターン呼ばれ、ユニットが「誰をどう攻撃するか」を決めるための関数です。射程内の敵や必殺技の使用可否を判定し、攻撃内容を返します。
-
-**attack関数の引数**
-
-| 引数名         | 型        | 説明                                      |
-|---------------|----------|-------------------------------------------|
-| turn          | number   | 現在のターン数                            |
-| inRangeEnemies| array    | 射程内にいる敵ユニットの配列              |
-| self          | object   | 自分自身の情報（座標・ステータスなど）    |
-
-**戻り値（表形式解説）**
-
-| キー      | 型      | 説明                                  |
-|----------|--------|---------------------------------------|
-| target   | object | 攻撃対象となる敵ユニットオブジェクト   |
-| method   | string | 攻撃方法（"normal"=通常攻撃, "skill"=必殺技）|
-
-攻撃しない場合は `null` を返します。
-
-**戻り値の例（パターン）**
-
-1. 通常攻撃する場合（攻撃対象の敵ユニットが変数enemyの場合）
-```js
-{ target: enemy, method: "normal" }
-```
-
-2. 必殺技（スキル）を使う場合（攻撃対象の敵ユニットが変数enemyの場合）
-```js
-{ target: enemy, method: "skill" }
-```
-
-3. 攻撃しない場合
-```js
-null
-```
-
-## 4. 補足メモ
-- 射程は `stats.range / 10` マスとして判定されます。
-- キャラクターアイコン上部に表示される名前は `init` で返した `name` プロパティです。省略するとJOB名が表示されます。
-- `init(context)` の `context` には `side` のほか `allyCastle`, `enemyCastle`, `mapSize` が含まれます。城位置を使って自分で絶対座標を計算することも可能です。
-- `initialPosition` は `{ x, y }` で直接座標を指定する従来形式に加え、`{ relativeTo: 'allyCastle', forward: 3, lateral: -1 }` や `{ relativeTo: 'allyCastle', x: 3, y: -1 }` のように自城を原点としたオフセット指定ができます（`forward` は敵方向、`lateral` は下方向が正）。
-- `state.enemyCastle` / `state.allyCastle` で各城のHPと座標が参照できます。敵城が射程内であれば `actions.attackCastle()` を返して直接ダメージを与えられます。
-- 1ターンに1回だけ「移動」「攻撃」できます。moveTo/attack関数はそれぞれ1つの行動を返してください。
-- `utils.stepToward(from, to)` で次の移動先座標を取得し、エンジンが自動で移動します。
-- 運営側のテンプレートでは両陣営とも `teams/<side>/unit01.js` ～ `unit10.js` を読み込みます。提出ファイル名を同じ規則に合わせると差し替えが容易です。
-- ユニットファイルは `init`, `moveTo`, `attack` の3関数を必ずexportしてください。
-- 【パラメーターボーナスについて】
-  - `init`関数の戻り値で `bonus` オブジェクトを指定すると、該当ユニットのステータスに加算されます。
-  - 例: `bonus: { attack: 5, speed: 2, hp: 20 }` の場合、元のJOBステータスにそれぞれ加算されます。
-  - 指定可能なキーは `doc/job.md` のパラメータ名（attack, speed, hp, range, defense など）です。
-  - ボーナス値は正の整数のみ有効です。未指定の場合はJOBの基本値のみが適用されます。
-- 指定できる `job` のキーは `soldier`, `lancer`, `archer`, `mage`, `healer`, `guardian`, `assassin`, `engineer`, `summoner`, `scout` の10種類です。スペルミスがあると試合開始時に弾かれます。
+まずはこのサンプルで動かし、動作を見ながら改良しましょう。
