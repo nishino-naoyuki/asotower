@@ -3,10 +3,10 @@ import * as utils from "../../shared/unit-utils.js";
 export function init() {
   return {
     job: "sumo",
-    name: "近本",
+    name: "猪突猛進",
     initialPosition: {
       relativeTo: "allyCastle",
-      x: 3,
+      x: 13,
       y: -2
     },
     memory: {},
@@ -16,10 +16,10 @@ export function init() {
 
 // どこに移動するか決める（最も近い敵がいればその座標、いなければ敵城）
 export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
+  // 猪突猛進：敵がいれば無条件で突進、いなければ敵城へ
   var targetX = self.position.x;
   var targetY = self.position.y;
 
-  //console.log("Turn:", turn,"enemies length:", enemies.length,"enemyCastle:", enemyCastle);
   if (enemies.length > 0) {
     var nearest = utils.findNearest(self, enemies);
     targetX = nearest.position.x;

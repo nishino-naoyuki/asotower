@@ -6,6 +6,88 @@ export class Overlay {
     this.message = document.createElement("div");
     this.logElem.appendChild(this.message);
     this.selectHandler = null;
+
+    this.bgmSelectEl = null;
+    this.selectedBgmKey = "";
+    this._pendingBgmOptions = null;
+    this._pendingBgmDefault = "";
+
+    this._initBgmSelector();
+    if (!this.bgmSelectEl) {
+      window.addEventListener(
+        "DOMContentLoaded",
+        () => this._initBgmSelector(),
+        { once: true }
+      );
+    }
+  }
+
+  _initBgmSelector() {
+    if (this.bgmSelectEl) return;
+
+    const startButton = document.getElementById("btn-start");
+    const parent = startButton?.parentElement;
+    if (!startButton || !parent) return;
+
+    const wrapper = document.createElement("label");
+    wrapper.className = "bgm-select-wrapper";
+    wrapper.textContent = "BGM: ";
+
+    const select = document.createElement("select");
+    select.className = "bgm-select";
+    wrapper.appendChild(select);
+
+    parent.insertBefore(wrapper, startButton.nextSibling);
+
+    select.addEventListener("change", (event) => {
+      this.selectedBgmKey = event.target.value;
+    });
+
+    this.bgmSelectEl = select;
+
+    if (this._pendingBgmOptions) {
+      const options = this._pendingBgmOptions;
+      const defaultKey = this._pendingBgmDefault;
+      this._pendingBgmOptions = null;
+      this._pendingBgmDefault = "";
+      this.setBgmOptions(options, defaultKey);
+    } else {
+      this.selectedBgmKey = select.value || "";
+    }
+  }
+
+  setBgmOptions(options = [], defaultKey = "") {
+    if (!this.bgmSelectEl) {
+      this._pendingBgmOptions = options;
+      this._pendingBgmDefault = defaultKey;
+      this._initBgmSelector();
+      return;
+    }
+
+    this.bgmSelectEl.innerHTML = "";
+
+    const noneOption = document.createElement("option");
+    noneOption.value = "";
+    noneOption.textContent = "BGMなし";
+    this.bgmSelectEl.appendChild(noneOption);
+
+    options.forEach(({ key, title }) => {
+      console.log("Adding BGM option:", key, title);
+      if( key.startsWith("main")){
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = title || key;
+        this.bgmSelectEl.appendChild(option);
+      }
+    });
+
+    const initialValue = defaultKey || this.bgmSelectEl.options[1]?.value || "";
+    this.bgmSelectEl.value = initialValue;
+    this.selectedBgmKey = this.bgmSelectEl.value;
+  }
+
+  getSelectedBgmKey() {
+    return this.selectedBgmKey;
   }
 
   update(state) {

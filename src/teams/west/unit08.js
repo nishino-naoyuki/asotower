@@ -3,7 +3,7 @@ import * as utils from "../../shared/unit-utils.js";
 export function init() {
   return {
     job: "lancer",
-    name: "坂本",
+    name: "槍使い",
     initialPosition: {
       relativeTo: "allyCastle",
       x: 4,

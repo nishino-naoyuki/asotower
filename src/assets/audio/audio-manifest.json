@@ -1,8 +1,29 @@
 {
   "bgm": {
-    "main": {
-      "path": "bgm/main_theme.mp3",
-      "loop": true
+    "main_01": {
+      "path": "bgm/main_theme1.mp3",
+      "loop": true,
+      "title": "勇壮なる序章"
+    },
+    "main_02": {
+      "path": "bgm/main_theme2.mp3",
+      "loop": true,
+      "title": "静かな行進"
+    },
+    "main_03": {
+      "path": "bgm/main_theme3.mp3",
+      "loop": true,
+      "title": "嵐の予感"
+    },
+    "main_04": {
+      "path": "bgm/main_theme4.mp3",
+      "loop": true,
+      "title": "夕暮れの決意"
+    },
+    "main_05": {
+      "path": "bgm/main_theme5.mp3",
+      "loop": true,
+      "title": "決闘の刻"
     },
     "fanfare": {
       "path": "bgm/fanfare_victory.mp3",

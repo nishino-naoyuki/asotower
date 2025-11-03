@@ -2,15 +2,15 @@ import * as utils from "../../shared/unit-utils.js";
 
 export function init() {
   return {
-    job: "lancer",
-    name: "柳田",
+    job: "soldier",
+    name: "ソルくん",
     initialPosition: {
       relativeTo: "allyCastle",
-      x: 6,
+      x: 12,
       y: 0
     },
     memory: {},
-    bonus: { atk: 0, def: 0, spd: 0, hit: 0, hp: 10 }, // 合計10
+    bonus: { atk: 2, def: 2, spd: 2, hit: 2, hp: 2 }, // 合計10
   };
 }
 
@@ -18,7 +18,6 @@ export function init() {
 export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
   var targetX = self.position.x;
   var targetY = self.position.y;
-  //console.log("Turn:", turn,"enemies length:", enemies.length);
   if (enemies.length > 0) {
     var nearest = utils.findNearest(self, enemies);
     targetX = nearest.position.x;
@@ -39,7 +38,6 @@ export function attack(turn, inRangeEnemies, self) {
     var target = utils.findNearest(self, inRangeEnemies);
     
     if(utils.hasUsedSkill(self) == false ){      
-      console.log("Use Skill on", target.name);
       return { target: target, method: "skill" };
     }else{
       return { target: target, method: "normal" };

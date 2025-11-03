@@ -2,15 +2,15 @@ import * as utils from "../../shared/unit-utils.js";
 
 export function init() {
   return {
-    job: "engineer",
-    name: "有原",
+    job: "summoner",
+    name: "サモくん",
     initialPosition: {
       relativeTo: "allyCastle",
-      x: 1,
-      y: 0
+      x: 12,
+      y: -5
     },
     memory: {},
-    bonus: { atk: 3, def: 2, spd: 2, hit: 2, hp: 1 }, // 合計10
+    bonus: { atk: 2, def: 2, spd: 2, hit: 2, hp: 2 }, // 合計10
   };
 }
 
@@ -18,7 +18,6 @@ export function init() {
 export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
   var targetX = self.position.x;
   var targetY = self.position.y;
-
   if (enemies.length > 0) {
     var nearest = utils.findNearest(self, enemies);
     targetX = nearest.position.x;
@@ -33,9 +32,16 @@ export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
 
 // 攻撃対象と方法を決める（射程内の敵がいれば最初の1体を通常攻撃）
 export function attack(turn, inRangeEnemies, self) {
+  console.log("InRangeEnemies:", inRangeEnemies.map(e => e.name),"unitrange:",self.stats.range);
   if (inRangeEnemies.length > 0) {
-    var target = inRangeEnemies[0];
-    return { target: target, method: "normal" };
+    //最も近い敵を取得
+    var target = utils.findNearest(self, inRangeEnemies);
+    
+    if(utils.hasUsedSkill(self) == false ){      
+      return { target: target, method: "skill" };
+    }else{
+      return { target: target, method: "normal" };
+    }
   }
   return null;
 }

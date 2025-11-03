@@ -5,9 +5,11 @@ import { Controls } from "./render/controls.js?v=202510261659";
 import { validateTeams } from "./sdk/validator.js?v=202510261721";
 import { createInitialState } from "./engine/state.js?v=202510261718";
 import { Sandbox } from "./sdk/sandbox.js?v=202510230936";
+import { AudioManager } from "./render/audio-manager.js?v=202510261659";
 
 const canvas = document.getElementById("battle-canvas");
 const renderer = new Renderer(canvas);
+const audioManager = new AudioManager();
 const overlay = new Overlay(renderer);
 const controls = new Controls();
 
@@ -55,6 +57,7 @@ async function startBattle() {
   overlay.clearLog();
   overlay.showMessage("戦闘開始！");
 
+  await audioManager.playBgmKey(overlay.getSelectedBgmKey());
   battle = createBattle({ west, east, config, renderer, overlay });
   battle.play();
 }
@@ -74,3 +77,8 @@ window.addEventListener("DOMContentLoaded", () => {
   preparePreview().catch((error) => console.error("初期配置の描画に失敗しました:", error));
   //overlay.showMessage("準備完了。戦闘開始を押してください。");
 });
+
+audioManager.getBgmOptions().then((options) => {
+  overlay.setBgmOptions(options, audioManager.getCurrentBgmKey());
+});
+

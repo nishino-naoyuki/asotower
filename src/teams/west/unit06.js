@@ -3,7 +3,7 @@ import * as utils from "../../shared/unit-utils.js";
 export function init() {
   return {
     job: "assassin",
-    name: "高寺",
+    name: "どどめくん",
     initialPosition: {
       relativeTo: "allyCastle",
       x: 13,
@@ -16,16 +16,20 @@ export function init() {
 
 // どこに移動するか決める（最も近い敵がいればその座標、いなければ敵城）
 export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
+  //一番ＨＰが低い敵に向かう
+  const hplowenemy = utils.getLowestHpEnemyInRange(self);
+  
   var targetX = self.position.x;
   var targetY = self.position.y;
 
-  if (enemies.length > 0) {
-    var nearest = utils.findNearest(self, enemies);
-    targetX = nearest.position.x;
-    targetY = nearest.position.y;
-  } else if (enemyCastle && enemyCastle.position) {
+  if(!hplowenemy){
+    //敵がいなければ敵城に向かう
     targetX = enemyCastle.x;
     targetY = enemyCastle.y;
+  }else{
+    //敵がいればその敵に向かう
+    targetX = hplowenemy.position.x;
+    targetY = hplowenemy.position.y;
   }
 
   return { x: targetX, y: targetY };
@@ -33,9 +37,16 @@ export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
 
 // 攻撃対象と方法を決める（射程内の敵がいれば最初の1体を通常攻撃）
 export function attack(turn, inRangeEnemies, self) {
-  if (inRangeEnemies.length > 0) {
-    var target = inRangeEnemies[0];
-    return { target: target, method: "normal" };
+  //ＨＰが低い敵にスキルを使ってとどめを刺す
+  const hplowenemy = utils.getLowestHpEnemyInRange(self);
+  
+  if(hplowenemy && utils.hasUsedSkill(self) === false){
+    return { target: hplowenemy, method: "skill" };
+  }else {
+    if (inRangeEnemies.length > 0) {
+      var target = inRangeEnemies[0];
+      return { target: target, method: "normal" };
+    }
   }
   return null;
 }

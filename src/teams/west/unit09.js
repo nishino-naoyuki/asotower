@@ -3,7 +3,7 @@ import * as utils from "../../shared/unit-utils.js";
 export function init() {
   return {
     job: "summoner",
-    name: "島田",
+    name: "おじさん",
     initialPosition: {
       relativeTo: "allyCastle",
       x: 8,
@@ -33,9 +33,16 @@ export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
 
 // 攻撃対象と方法を決める（射程内の敵がいれば最初の1体を通常攻撃）
 export function attack(turn, inRangeEnemies, self) {
+  // おじさん：射程内の敵がいれば、スキル使用可能ならスキル攻撃、使用済みなら通常攻撃
   if (inRangeEnemies.length > 0) {
-    var target = inRangeEnemies[0];
-    return { target: target, method: "normal" };
+    if( utils.hasUsedSkill(self) == false ) {
+      // スキル使用可能なら最初の敵にスキル攻撃
+      return { target: inRangeEnemies[0], method: "skill" };
+    } else {
+      // スキル使用済みなら通常攻撃
+      var target = inRangeEnemies[0];
+      return { target: target, method: "normal" };
+    }
   }
   return null;
 }

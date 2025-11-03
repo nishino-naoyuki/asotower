@@ -34,6 +34,8 @@ export function validateTeams(west, east, config) {
       errors.push(`${unit.side}の${unit.name ?? unit.id ?? unit.file} のinitが不正なJOBを返しました。${job} は未定義です。`);
     }
     const resolvedPosition = resolveUnitPosition(initResult.initialPosition, unit.initialPosition, unit.side);
+    
+    //console.log("unit.name:",unit," resolvedPosition:", resolvedPosition);
     const validX =
       unit.side === "west"
         ? resolvedPosition.x < HALF_MAP_WIDTH
@@ -41,10 +43,9 @@ export function validateTeams(west, east, config) {
     if (!validX) {
       console.log("invalid position for unit:", unit, resolvedPosition);
       unit.side === "west"
-        ? errors.push(`${unit.side} の${unit.name ?? unit.file} の初期位置が陣地範囲外(x=${MAP_DATA.castles.west.x + resolvedPosition.x})です。${HALF_MAP_WIDTH-MAP_DATA.castles.west.x}より小さい値である必要があります。`)
-        : errors.push(`${unit.side} の${unit.name ?? unit.file} の初期位置が陣地範囲外(x=${MAP_DATA.castles.east.x - resolvedPosition.x})です。${MAP_DATA.castles.east.x-HALF_MAP_WIDTH}より小さい値である必要があります。`)
+        ? errors.push(`${unit.side} の${unit.name ?? unit.file} の初期位置が陣地範囲外(x=${resolvedPosition.x-MAP_DATA.castles.west.x})です。${HALF_MAP_WIDTH-MAP_DATA.castles.west.x}より小さい値である必要があります。`)
+        : errors.push(`${unit.side} の${unit.name ?? unit.file} の初期位置が陣地範囲外(x=${MAP_DATA.castles.east.x-resolvedPosition.x})です。${MAP_DATA.castles.east.x-HALF_MAP_WIDTH}より小さい値である必要があります。`)
     }
-    //console.log("resolvedPosition:", resolvedPosition);
   }
   
   if (errors.length) {

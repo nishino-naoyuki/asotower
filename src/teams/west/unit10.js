@@ -3,7 +3,7 @@ import * as utils from "../../shared/unit-utils.js";
 export function init() {
   return {
     job: "scout",
-    name: "岩貞",
+    name: "隠密さん",
     initialPosition: {
       relativeTo: "allyCastle",
       x: 6,
@@ -16,26 +16,25 @@ export function init() {
 
 // どこに移動するか決める（最も近い敵がいればその座標、いなければ敵城）
 export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
-  var targetX = self.position.x;
-  var targetY = self.position.y;
-
-  if (enemies.length > 0) {
-    var nearest = utils.findNearest(self, enemies);
-    targetX = nearest.position.x;
-    targetY = nearest.position.y;
-  } else if (enemyCastle && enemyCastle.position) {
-    targetX = enemyCastle.x;
-    targetY = enemyCastle.y;
-  }
+  //ひたすら城に向かう
+  const targetX = enemyCastle.x;
+  const targetY = enemyCastle.y;
 
   return { x: targetX, y: targetY };
 }
 
 // 攻撃対象と方法を決める（射程内の敵がいれば最初の1体を通常攻撃）
 export function attack(turn, inRangeEnemies, self) {
+  //敵が近くに来たら隠密行動（スキル発動）する
   if (inRangeEnemies.length > 0) {
-    var target = inRangeEnemies[0];
-    return { target: target, method: "normal" };
+    if( utils.hasUsedSkill(self) == false ) {
+      // スキル使用可能なら最初の敵にスキル攻撃
+      return { target: inRangeEnemies[0], method: "skill" };
+    } else {
+      // スキル使用済みなら通常攻撃
+      var target = inRangeEnemies[0];
+      return { target: target, method: "normal" };
+    }
   }
   return null;
 }

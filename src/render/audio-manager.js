@@ -1,29 +1,118 @@
-class AudioManager {
+export class AudioManager {
   constructor() {
     this.currentBgm = null;
+    this.currentBgmKey = "";
     this.manifest = { bgm: {}, sfx: {}, jobs: {} };
-    this.preloaded = { bgm: new Map(), sfx: new Map(), jobs: new Map() };
+    this.preloaded = {
+      bgm: new Map(),
+      sfx: new Map(),
+      jobs: new Map()
+    };
     this.bgmOptions = new Map();
+    this._manifestPromise = null;
     this.ready = this.loadManifest();
   }
 
   async loadManifest() {
-    try {
-      const response = await fetch("./assets/audio/audio-manifest.json?v=" + Date.now());
-      if (!response.ok) throw new Error(`manifest status ${response.status}`);
-      this.manifest = await response.json();
+    if (this._manifestPromise) return this._manifestPromise;
+
+    this._manifestPromise = (async () => {
+      try {
+        const response = await fetch(`./assets/audio/audio-manifest.json?v=${Date.now()}`);
+        if (!response.ok) throw new Error(`manifest status ${response.status}`);
+        const data = await response.json();
+        this.manifest = {
+          bgm: data?.bgm ?? {},
+          sfx: data?.sfx ?? {},
+          jobs: data?.jobs ?? {}
+        };
+      } catch (err) {
+        console.warn("Audio manifest load failed", err);
+        this.manifest = this.manifest || { bgm: {}, sfx: {}, jobs: {} };
+      }
+
+      this.preloaded = {
+        bgm: new Map(),
+        sfx: new Map(),
+        jobs: new Map()
+      };
+      this.bgmOptions = new Map();
+
       await Promise.all([
         this.preloadCategory("bgm"),
         this.preloadCategory("sfx"),
         this.preloadJobCategory()
       ]);
+
+      return this.manifest;
+    })();
+
+    return this._manifestPromise;
+  }
+
+  async getBgmOptions() {
+    await this.ready;
+    const bgm = this.manifest?.bgm ?? {};
+    return Object.entries(bgm).map(([key, info]) => ({
+      key,
+      title: info?.title || key,
+      loop: info?.loop !== false
+    }));
+  }
+
+  async playBgmKey(key) {
+    await this.ready;
+
+    if (this.currentBgm) {
+      this.currentBgm.pause();
+      this.currentBgm = null;
+    }
+
+    if (!key) {
+      this.currentBgmKey = "";
+      return;
+    }
+
+    const cached = this.preloaded.bgm.get(key);
+    if (!cached) {
+      console.warn(`BGM key '${key}' not found`);
+      this.currentBgmKey = "";
+      return;
+    }
+
+    const options = this.bgmOptions.get(key) ?? {};
+    const clone = cached.cloneNode(true);
+    clone.loop = options.loop ?? cached.loop ?? true;
+    clone.volume = options.volume ?? cached.volume ?? 0.5;
+
+    try {
+      await clone.play();
+      this.currentBgm = clone;
+      this.currentBgmKey = key;
     } catch (err) {
-      console.warn("Audio manifest load failed", err);
+      console.warn("BGMの再生に失敗:", err);
+      this.currentBgm = null;
+      this.currentBgmKey = "";
     }
   }
 
+  stopBgm() {
+    if (!this.currentBgm) return;
+    this.currentBgm.pause();
+    this.currentBgm = null;
+    this.currentBgmKey = "";
+  }
+
+  getCurrentBgmKey() {
+    return this.currentBgmKey;
+  }
+
   async preloadCategory(kind) {
-    const entries = Object.entries(this.manifest[kind] ?? {});
+    const entries = Object.entries(this.manifest?.[kind] ?? {});
+    if (!entries.length) return;
+
+    if (!this.preloaded[kind]) this.preloaded[kind] = new Map();
+
     await Promise.all(
       entries.map(async ([key, value]) => {
         if (kind === "bgm") {
@@ -46,7 +135,7 @@ class AudioManager {
   }
 
   async preloadJobCategory() {
-    const jobs = this.manifest.jobs ?? {};
+    const jobs = this.manifest?.jobs ?? {};
     const tasks = [];
 
     Object.entries(jobs).forEach(([jobKey, sounds]) => {
@@ -85,17 +174,6 @@ class AudioManager {
     }
   }
 
-  playBgm(path) {
-    if (this.currentBgm) {
-      this.currentBgm.pause();
-      this.currentBgm = null;
-    }
-    this.currentBgm = new Audio(path);
-    this.currentBgm.loop = true;
-    this.currentBgm.volume = 0.5;
-    this.currentBgm.play().catch(() => {});
-  }
-
   playSfx(path, withEcho = false) {
     if (!withEcho) {
       const audio = new Audio(path);
@@ -121,24 +199,6 @@ class AudioManager {
         delay.connect(ctx.destination);
         source.start();
       });
-  }
-
-  async playBgmKey(key) {
-    await this.ready;
-    const cached = this.preloaded.bgm.get(key);
-    if (!cached) {
-      console.warn(`BGM key '${key}' not found`);
-      return;
-    }
-    if (this.currentBgm) {
-      this.currentBgm.pause();
-    }
-    this.currentBgm = cached.cloneNode(true);
-    const options = this.bgmOptions.get(key) ?? {};
-    const volume = options.volume ?? cached.volume ?? 0.5;
-    this.currentBgm.loop = options.loop ?? true;
-    this.currentBgm.volume = volume;
-    this.currentBgm.play().catch(() => {});
   }
 
   async playSfxKey(key) {
