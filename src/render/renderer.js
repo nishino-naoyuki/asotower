@@ -496,6 +496,7 @@ export class Renderer {
         return;
       }
     }
+    imageKey = "effect_impact";
     // 通常攻撃画像
     const sprite = this.getImage(imageKey);
     const baseSize = TILE * 2.2;

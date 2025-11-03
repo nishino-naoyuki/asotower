@@ -410,6 +410,7 @@ function handleAttack(state, unit, command) {
   const damage = computeDamage(unit, target);
   const prevHp = target.hp;
   target.hp = Math.max(0, target.hp - damage);
+  //console.log(`${unit.name} attacks ${target.name} for ${damage} damage (HP: ${prevHp} -> ${target.hp})`);
   state.log.push({ turn: state.turn, message: `${unit.name} が ${target.name} に ${damage} ダメージ` });
   const jobSounds = [];
   if (damage > 0 && target.job) {

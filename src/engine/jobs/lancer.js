@@ -18,10 +18,11 @@ export function doSkill(state, unit, targets) {
   // 10タイル分のピクセル距離
   const range = SKILL_RANGE;
   const areaTargets = getAttackableEnemies(state, unit, range);
-  console.log("Lancer Skill Targets:", areaTargets);
+  
   if (areaTargets.length === 0) return;
   if (!unit.memory) unit.memory = {};
   unit.memory.lancerSkillTurns = 1;
+  console.log("Lancer Skill Targets:", areaTargets);
   areaTargets.forEach(target => {
     // areaTargets は getAttackableEnemies(state, unit, range) で
     // 既に拡張レンジでフィルタ済みなので、ここで通常射程の isInRange を
@@ -30,7 +31,8 @@ export function doSkill(state, unit, targets) {
     target.memory.reachBreakHit = true;
     const damage = computeDamage(unit, target);
     target.hp = Math.max(0, target.hp - damage);
-    state.log.push({ turn: state.turn, message: `${unit.name} が ${target.name} に ${damage} ダメージ` });
+    state.log.push({ turn: state.turn, message: `Lancer Skill hits ${unit.name} が ${target.name} に ${damage} ダメージ` });
+    //console.log(`Lancer Skill hits ${target.name} for ${damage} damage.`);
     queueEffect(state, {
       kind: 'attack',
       position: target.position,
