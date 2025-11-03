@@ -1,5 +1,3 @@
-
-
 # asotower
 
 ## 目次
@@ -10,7 +8,16 @@
 - [各仕様書へのリンク](#各仕様書へのリンク)
 
 ## このプログラムが何のプログラムかの概要
-純ES Modules・ブラウザ実行型の対戦型タワーディフェンスゲーム。運営は両陣営のユニットAIと設定ファイルを用意し、学生はSDK/APIを使って自チームのAIファイルを作成・提出。ブラウザ上で戦闘・リプレイ観戦が可能。
+- 旧説明を更新しました。
+
+## このプログラムが何のプログラムかの概要
+ブラウザで動く ES Modules ベースの対戦型タワーディフェンスシミュレータです。運営が用意した両陣営のユニットAIと設定を読み込み、学生は init, moveTo, attackを使ってユニットの振る舞いを実装します。主な特徴は次のとおりです。
+
+- 学生が作成したユニットスクリプトを読み込んで試合を実行・可視化できる。  
+- UI で BGM を 5 種類から選べ、戦闘開始時に選曲をロードして再生する（BGM は src/assets/audio/audio-manifest.json で管理）。  
+- 画面上のユニット名ラベルと左下のユニット一覧は陣営（east / west）ごとに色分け。HP が 0 のユニットは薄く表示される（視認性向上）。  
+- AudioManager による BGM/SFX の管理、ジョブ別音声のサポート。  
+- 学習向けに簡潔なユーティリティ群（shared/unit-utils.js）とテンプレートを提供。
 
 ## プログラムの実行方法
 ### 方法A: Python簡易サーバー
@@ -21,25 +28,38 @@
 2. `http://localhost:8000`（Codespacesは転送URL）へアクセス。
 3. UIでチーム編成を確認し「戦闘開始」を押す。
 
-### 方法B: VS Code Live Server
-1. VS Codeで本リポジトリを開く。
-2. 拡張機能「Live Server」（Ritwick Dey）をインストール。
-3. `src/index.html` を右クリック→**Open with Live Server**。
-4. ブラウザで `http://127.0.0.1:5500/src/index.html` を開く。
-5. 画面で「戦闘開始」を押す。
+### 方法B: VS Code Live Server（ローカルPCで動かすときはこちら）
+1. Githubから一式をZipでダウンロード、その後解凍する
+2. VS Codeで本リポジトリを開く。
+3. 拡張機能「Live Server」（Ritwick Dey）をインストール。
+4. `src/index.html` を右クリック→**Open with Live Server**。
+5. ブラウザで `http://127.0.0.1:5500/src/index.html` を開く。
+6. 画面で「戦闘開始」を押す。
 
 ## プログラムのフォルダ構成
 ```text
 src/
-	index.html            ブラウザエントリーポイント
-	main.js               初期化・UI制御
-	engine/               ゲーム進行・ルール
-	render/               描画・UI・エフェクト
-	sdk/                  学生向けAPI・サンドボックス
-	teams/                西軍・東軍のAIファイル
-	config/               チーム編成・アセット設定
-	data/                 ジョブ・マップ定義
-	assets/               画像・音声アセット
+  index.html                ブラウザエントリーポイント
+  main.js                   初期化・UI制御
+  engine/                   ゲーム進行・ルール（actions.js, game-engine.js, rules.js 等）
+  render/                   描画・UI・エフェクト
+    audio-manager.js        BGM/SFX 管理
+    ui-overlay.js           画面上オーバーレイ（ログ・ユニット一覧・BGM選択）
+    layers/                 ラベルやスプライト描画レイヤー（unit-label-layer.js 等）
+  shared/                   共有ユーティリティ（unit-utils.js 等）
+  sdk/                      学生向け API / サンドボックス
+  teams/                    東西のユニットスクリプト（teams/east, teams/west）
+  config/                   チーム編成・アセット設定（team-map.json, asset-manifest.json 等）
+  data/                     ジョブ・マップ定義（jobs.js, map.js 等）
+  assets/                   画像・音声アセット
+    audio/
+      audio-manifest.json
+      bgm/                  BGM ファイル（main_theme1..5.mp3 等）
+      sfx/                  効果音
+    images/
+    icons/
+  styles/                   CSS（main.css 等）
+  doc/                      追加ドキュメント・仕様書
 ```
 
 ## 学生がプログラムをどう組めばいいかの解説
@@ -51,45 +71,50 @@ src/
 - ユーティリティは`shared/unit-utils.js`経由で利用可能。
 
 ### 最小テンプレート例（unit01.js参考）
+下は src/teams/[east|west]/ に置くユニットの最小テンプレート例です。添付の west/unit01.js と同等の形式で書かれています。必要に応じて job や initialPosition を変更してください。
+
 ```javascript
+// filepath: src/teams/your-team/unit01.js
 import * as utils from "../../shared/unit-utils.js";
 
 export function init() {
-	return {
-		job: "assassin",
-		name: "ユニットの表示名",
-		initialPosition: {
-			relativeTo: "allyCastle",
-			x: 13,
-			y: 1
-		},
-		memory: {},
-		bonus: { atk: 3, def: 2, spd: 2, hit: 2, hp: 1 }, // 合計10
-	};
+  return {
+    job: "sumo", // data/jobs.js にある職名を指定
+    name: "猪突猛進", // 表示名
+    initialPosition: {
+      relativeTo: "allyCastle", // 必ず自軍城基準の相対指定を使う
+      x: 13,
+      y: -2
+    },
+    memory: {},
+    bonus: { atk: 3, def: 2, spd: 2, hit: 2, hp: 1 } // 合計10 を目安に
+  };
 }
 
 export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
-	var targetX = self.position.x;
-	var targetY = self.position.y;
+  // 敵がいれば最も近い敵へ、いなければ敵城へ向かう単純ロジック
+  let targetX = self.position.x;
+  let targetY = self.position.y;
 
-	if (enemies.length > 0) {
-		var nearest = utils.findNearest(self, enemies);
-		targetX = nearest.position.x;
-		targetY = nearest.position.y;
-	} else if (enemyCastle && enemyCastle.position) {
-		targetX = enemyCastle.position.x;
-		targetY = enemyCastle.position.y;
-	}
+  if (enemies && enemies.length > 0) {
+    const nearest = utils.findNearest(self, enemies);
+    targetX = nearest.position.x;
+    targetY = nearest.position.y;
+  } else if (enemyCastle && enemyCastle.position) {
+    targetX = enemyCastle.position.x;
+    targetY = enemyCastle.position.y;
+  }
 
-	return { x: targetX, y: targetY };
+  return { x: targetX, y: targetY };
 }
 
 export function attack(turn, inRangeEnemies, self) {
-	if (inRangeEnemies.length > 0) {
-		var target = inRangeEnemies[0];
-		return { target: target, method: "normal" };
-	}
-	return null;
+  // 射程内に敵がいれば最初の1体を通常攻撃
+  if (inRangeEnemies && inRangeEnemies.length > 0) {
+    const target = inRangeEnemies[0];
+    return { target, method: "normal" };
+  }
+  return null;
 }
 ```
 
