@@ -261,7 +261,7 @@ export class Renderer {
       ctx.fillRect(center.x - 18, center.y + 18, 36 * Math.max(0, unit.hp / unit.stats.hp), 5);
 
       const label = unit.name ?? unit.job;
-      ctx.fillStyle = COLORS.overlayText;
+      ctx.fillStyle = unit.side === "west" ? COLORS.unitWest : COLORS.unitEast;
       ctx.font = "bold 16px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "bottom";

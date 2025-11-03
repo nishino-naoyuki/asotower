@@ -102,10 +102,19 @@ export class Overlay {
   }
 
   renderUnits(units) {
+    const colorBySide = {
+      east: "#4aa3ff",
+      west: "#ff7b71"
+    };
+
     this.unitDetails.innerHTML = units
-      .map((u) => `<div class="unit-row" data-id="${u.id}">
-        <strong>${u.name}</strong> (${u.job}) HP: ${u.hp} pos: (${Math.floor(u.position.x)}, ${Math.floor(u.position.y)})
-      </div>`)
+      .map((u) => {
+        const nameColor = colorBySide[u.side] || "#d9d9d9";
+        const opacity = u.hp <= 0 ? 0.45 : 1;
+        return `<div class="unit-row" data-id="${u.id}" style="opacity:${opacity};">
+        <strong style="color:${nameColor};">${u.name}</strong> (${u.job}) HP: ${u.hp} pos: (${Math.floor(u.position.x)}, ${Math.floor(u.position.y)})
+      </div>`;
+      })
       .join("");
     this.unitDetails.querySelectorAll(".unit-row").forEach((el) => {
       el.addEventListener("click", () => {
