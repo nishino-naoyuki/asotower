@@ -34,15 +34,15 @@
 
 | ジョブ名 | Jobキー | アイコン | HP | 攻撃 | 防御 | 速度 | 射程 | スキル（説明） |
 | --- | ---: | :---: | ---: | ---: | ---: | ---: | ---: | --- |
-| ソルジャー | soldier | ![soldier](../src/assets/images/jobs/soldier.png) | 28 | 48 | 32 | 12 | 20 | ブレイブチャージ：数ターンの間、攻撃力が上がる。 |
-| ランサー | lancer | ![lancer](../src/assets/images/jobs/lancer.png) | 22 | 28 | 22 | 30 | 38 | リーチブレイク：前方に広い貫通攻撃。場合によって防御を下げる。 |
+| ソルジャー | soldier | ![soldier](../src/assets/images/jobs/soldier.png) | 28 | 48 | 32 | 12 | 20 | ブレイブチャージ：３ターンの間、攻撃力が１．５倍になる。 |
+| ランサー | lancer | ![lancer](../src/assets/images/jobs/lancer.png) | 22 | 28 | 22 | 30 | 38 | リーチブレイク：範囲10タイルに貫通攻撃。 |
 | アーチャー | archer | ![archer](../src/assets/images/jobs/archer.png) | 18 | 18 | 20 | 30 | 54 | マルチショット：射程内の敵に、それぞれ70%威力の攻撃 |
 | メイジ | mage | ![mage](../src/assets/images/jobs/mage.png) | 26 | 32 | 24 | 28 | 30 | エレメンタルバースト：半径2マスに数ターンの継続ダメージを与える。 |
 | ヒーラー | healer | ![healer](../src/assets/images/jobs/healer.png) | 18 | 18 | 26 | 40 | 38 | メディカ：味方全体を回復し、回復効果を追加する。 |
-| ガーディアン | guardian | ![guardian](../src/assets/images/jobs/guardian.png) | 36 | 14 | 54 | 8 | 28 | フォートレス：一定時間、防御力が高くなる。味方を引きつける効果がある。 |
+| ガーディアン | guardian | ![guardian](../src/assets/images/jobs/guardian.png) | 36 | 14 | 54 | 8 | 28 | フォートレス：4ターンの間、防御力が高くなる。味方を引きつける効果がある。 |
 | アサシン | assassin | ![assassin](../src/assets/images/jobs/assassin.png) | 18 | 40 | 14 | 36 | 32 | シャドウステップ：瞬時に移動して背後から大ダメージを与える。 |
 | エンジニア | engineer | ![engineer](../src/assets/images/jobs/engineer.png) | 20 | 16 | 30 | 30 | 44 | タレット展開：攻撃する砲台を設置して敵を攻撃させる。 |
-| サモナー | summoner | ![summoner](../src/assets/images/jobs/summoner.png) | 26 | 24 | 22 | 26 | 42 | チャンピオンコール：仲間を召喚して一定時間一緒に戦わせる。 |
+| サモナー | summoner | ![summoner](../src/assets/images/jobs/summoner.png) | 26 | 24 | 22 | 26 | 42 | チャンピオンコール：強力なチャンピオン（HP100攻撃力40）を召喚して5ターン一緒に戦わせる。 |
 | スカウト | scout | ![scout](../src/assets/images/jobs/scout.png) | 14 | 18 | 12 | 56 | 40 | リコンパルス：短時間ステルスになり、敵から狙われずに移動できる。 |
 | 相撲レスラー | sumo | ![sumo](../src/assets/images/jobs/sumo.png) | 56 | 30 | 30 | 8 | 16 | 土俵轟砕：周囲に大ダメージを与え、敵を押し戻す効果がある。 |
 
