@@ -43,8 +43,8 @@
 | アサシン | assassin | ![assassin](../src/assets/images/jobs/assassin.png) | 18 | 40 | 14 | 36 | 32 | シャドウステップ：瞬時に移動して背後から大ダメージを与える。 |
 | エンジニア | engineer | ![engineer](../src/assets/images/jobs/engineer.png) | 20 | 16 | 30 | 30 | 44 | タレット展開：攻撃する砲台を設置して敵を攻撃させる。 |
 | サモナー | summoner | ![summoner](../src/assets/images/jobs/summoner.png) | 26 | 24 | 22 | 26 | 42 | チャンピオンコール：強力なチャンピオン（HP100攻撃力40）を召喚して5ターン一緒に戦わせる。 |
-| スカウト | scout | ![scout](../src/assets/images/jobs/scout.png) | 14 | 18 | 12 | 56 | 40 | リコンパルス：短時間ステルスになり、敵から狙われずに移動できる。 |
-| 相撲レスラー | sumo | ![sumo](../src/assets/images/jobs/sumo.png) | 56 | 30 | 30 | 8 | 16 | 土俵轟砕：周囲に大ダメージを与え、敵を押し戻す効果がある。 |
+| スカウト | scout | ![scout](../src/assets/images/jobs/scout.png) | 14 | 18 | 12 | 56 | 40 | リコンパルス：2ターンの間ステルスになり、敵から狙われずに移動できる。 |
+| 相撲レスラー | sumo | ![sumo](../src/assets/images/jobs/sumo.png) | 56 | 30 | 30 | 8 | 16 | 土俵轟砕：半径2タイルにダメージを与え、4タイル分敵を押し戻す効果がある。 |
 
 ---
 
