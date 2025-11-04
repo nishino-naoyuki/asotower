@@ -21,7 +21,8 @@ body, html {
 #battle-container {
   background: #181c24;
   border: 1px solid #2d3342;
-  padding: 8px;
+  padding: 3px;
+  display: flex;
 }
 #controls {
   display: flex;
