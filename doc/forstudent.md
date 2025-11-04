@@ -178,20 +178,26 @@
 ---
 
 ## 5．便利関数（src/shared/unit-utils.js の主な関数）
-よく使う関数を一覧にします。使い方例も短く示します。
+よく使う関数を一覧にします。各関数に短い概要を追加して、使い方例も示します。
 
-| 関数名 | 引数 | 戻り値 | 使用例 |
-|---|---:|---|---|
-| distanceBetween(a, b) | a:{x,y}, b:{x,y} | 数値（距離） | d = distanceBetween(self.position, enemy.position) |
-| findNearest(self, units) | self, units:配列 | 最も近いユニット または null | t = findNearest(self, enemies) |
-| findFarthestEnemyPosition(self, enemies) | self, enemies | {x,y} または null | pos = findFarthestEnemyPosition(self, enemies) |
-| getEnemyCastlePosition(self, map) | self, map | {x,y} | castlePos = getEnemyCastlePosition(self, MAP_DATA) |
-| hasUsedSkill(unit) | unit | boolean | if (!hasUsedSkill(self)) { /* スキル使える */ } |
-| getUnitPosition(unit) | unit | {x,y} | pos = getUnitPosition(enemy) |
-| getUnitHp(unit) | unit | 数値 | hp = getUnitHp(enemy) |
-| getUnitJob(unit) | unit | 文字列 | job = getUnitJob(self) |
-| getUnitsByJob(units, jobName) | units, jobName | 配列 | eng = getUnitsByJob(allies, "engineer") |
-| stepToward(from, to) | from:{x,y}, to:{x,y} | {x,y} | next = stepToward(self.position, targetPos) |
+| 関数名 | 引数 | 戻り値 | 関数の概要 | 使用例 |
+|---|---:|---|---|---|
+| distanceBetween(a, b) | a:{x,y}, b:{x,y} | 数値（距離） | 2点間のユークリッド距離を返す。引数が不正なら 0 を返す。 | d = distanceBetween(self.position, enemy.position) |
+| findNearest(self, units) | self, units:配列 | 最も近いユニット または null | 指定配列から最も近いユニットを返す（未発見なら null）。 | t = findNearest(self, enemies) |
+| findFarthestEnemyPosition(self, enemies) | self, enemies | {x,y} または null | 最も遠い敵の座標を返す（見つからなければ null）。 | pos = findFarthestEnemyPosition(self, enemies) |
+| getDamagedAllies(self) | self | 配列 | 味方のうち HP が最大値未満のユニット配列を返す（self を除く）。state を参照するためグローバル state が必要。 | injured = getDamagedAllies(self) |
+| hasUsedSkill(unit) | unit | boolean | unit.skill.used を基にスキル使用済みかを返す。 | if (!hasUsedSkill(self)) { /* スキル可 */ } |
+| isEnemyCastleInRange(self, range = null) | self, range? | boolean | 指定射程（省略時は unit の通常射程）で敵城が射程内かを判定する。 | if (isEnemyCastleInRange(self)) { /* 城攻撃可能 */ } |
+| getEnemyCastlePosition(self) | self | {x,y} または null | state.map の敵城座標を返す。 | castle = getEnemyCastlePosition(self) |
+| getUnitPosition(unit) | unit | {x,y} または null | unit.position を安全に取得する。 | pos = getUnitPosition(enemy) |
+| getUnitHp(unit) | unit | 数値 または null | unit.hp が数値なら返す、そうでなければ null。 | hp = getUnitHp(enemy) |
+| getUnitJob(unit) | unit | 文字列 または null | ジョブ名を返す（未設定なら null）。 | job = getUnitJob(self) |
+| getUnitsByJob(units, jobName) | units, jobName | 配列 | 指定ジョブ名と一致するユニット配列を返す（なければ空配列）。 | eng = getUnitsByJob(allies, "engineer") |
+| isScoutInSkillMode(self) | self | boolean | スカウトがステルス（skill）状態にあるかをメモリ値で判定する。 | if (isScoutInSkillMode(enemy)) { /* 無視 */ } |
+| getEnemiesInRange(self) | self | 配列 | 射程内の攻撃可能な敵を返す。 | targets = getEnemiesInRange(self) |
+| getLowestHpEnemyInRange(self, range = null) | self, range? | ユニットオブジェクト または null | 射程内で HP が最も低い敵を返す。ステルスや HP<=0 を除外。 | low = getLowestHpEnemyInRange(self) |
+| canAttack(self, target, range = null) | self, target, range? | boolean | 単純判定：存在/味方でない/HP>0/ステルスでない/射程内 の全てを満たすかを返す。 | if (canAttack(self, enemy)) { /* 攻撃可 */ } |
+| willCollide(unit, targetPos) | unit, {x,y} | boolean | 指定位置へ移動したときに他ユニット・城・壁・マップ外で衝突するかの簡易判定。 | if (!willCollide(self, nextPos)) { /* 移動可能 */ } |
 
 ---
 
