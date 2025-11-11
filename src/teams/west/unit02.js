@@ -9,7 +9,6 @@ export function init() {
       x: 13,
       y: -1
     },
-    memory: {},
     bonus: { atk: 3, def: 2, spd: 2, hit: 2, hp: 1 }, // 合計10
   };
 }
@@ -24,7 +23,7 @@ export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
     var nearest = utils.findNearest(self, enemies);
     targetX = nearest.position.x;
     targetY = nearest.position.y;
-  } else if (enemyCastle && enemyCastle.position) {
+  } else if (enemyCastle) {
     targetX = enemyCastle.x;
     targetY = enemyCastle.y;
   }

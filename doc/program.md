@@ -190,15 +190,16 @@ src/
 
 ## 4. 実行方法（2パターン）
 
-A. Python 簡易サーバ（推奨：軽量）
+A. Python 簡易サーバ（軽量）
 1. リポジトリルートでターミナルを開く（devcontainer内は Ubuntu 24.04）  
 2. 次を実行：
    $ python3 -m http.server --directory src 8000  
 3. ブラウザで http://localhost:8000/ を開く（または Codespaces のポート公開先を利用）
 
-B. VS Code Live Server（開発向け）
+B. VS Code Live Server（推奨：ローカルPCで実行する場合）
+0. VS Codeでsrcフォルダを開く
 1. VS Code 拡張 "Live Server" をインストール  
-2. `src/index.html` を右クリック → "Open with Live Server"  
+2. `index.html` を右クリック → "Open with Live Server"  
 3. 表示されたローカルURLで動作確認
 
 起動時の流れ（簡易）

@@ -1,6 +1,6 @@
 # 学生向けプログラム仕様（詳しい必須関数説明）
 
-このファイルは中学生でもわかるように、できるだけやさしく丁寧に書いています。特に必須実装関数（init / moveTo / attack）について、引数・返り値を細かく説明します。まずはサンプルを動かしてから読み返してください。
+必須実装関数（init / moveTo / attack）について、引数・返り値を細かく説明します。まずはサンプルを動かしてから読み返してください。
 
 目次
 1. このゲームの概要  
@@ -23,7 +23,6 @@
 
 ## 2．ゲームの勝利条件（優先順位）
 1. どちらかの城のHPが0になったら即終了。  
-   - 片方だけ0なら相手の勝ち。両方0なら引き分け。  
 2. ターン上限（デフォルト20ターン）で終了した場合：  
    - 城の残りHPが多い側が勝ち。  
    - 同じなら生存ユニット数で判定。  
@@ -50,37 +49,36 @@
   | 関数名 | init |
 
 - 引数
-  | 引数名 | 型 | 説明 |
-  |---:|---:|---|
-  | context | Object | ゲーム開始時に渡される情報。自身の陣営(side)、マップ情報(map)、城情報などを含む。 |
-
-  context に含まれる主な項目（代表例）
-  - context.side: "east" または "west"（自分のチーム）
-  - context.map: MAP_DATA（src/data/map.js の内容）
-  - context.allyCastle / context.enemyCastle: 城の座標情報（存在する場合）
-  - context.slot: team-map.json でのスロット番号（あれば）
+  なし
 
 - 戻り値（必ずオブジェクトを返す）
   | 戻り値フィールド | 型 | 必須 | 詳細説明 |
   |---:|---:|:---:|---|
   | job | string | 必須 | 使用する職業名（src/data/jobs.js にある正しい名前）。例: "engineer" |
   | name | string | 任意 | 画面に表示する名前（省略可） |
-  | initialPosition | Object | 任意（指定しないと team-map.json の設定が優先される） | ユニットの初期位置指定（下で詳述） |
+  | initialPosition | Object | 任意 | ユニットの初期位置指定（下で詳述） |
   | bonus | Object | 任意 | 追加パラメータ（攻撃力や速度など）。合計値は運営ルールで制限あり（通常は合計10以内を推奨） |
-  | memory | Object | 任意 | ユニット固有の保存領域。以後のターンでも値が保持される |
 
 - initialPosition の指定方法（必ず「相対指定」を使うこと）
   - 理由: ユニットがどちらのチーム（east/west）として配置されるかは運営設定に依存するため、絶対座標は使わないでください。必ず自軍城（allyCastle）を基準にした相対指定を行ってください。
   - 記述例:
-    - { relativeTo: "allyCastle", forward: 3, lateral: 0 }
+    - { relativeTo: "allyCastle", x: 3, y: 0 }
       - relativeTo: "allyCastle"（必須） — 自軍城を基準にすることを示す
-      - forward: 正の整数 — 自軍城から見て前方へ何マス離すか（自軍の向きに依存）
-      - lateral: 整数（負/正可） — 横方向のずれ（右/左）
+      - x: 整数 — 自軍城から見て前方へ何マス離すか（自軍の向きに依存）
+      - y: 整数（負/正可） — 縦方向のずれ（右/左）城基準。0だと城と同じ縦位置になる
   - エンジン側でこの相対指定を絶対座標に変換して配置します。例: 自軍城の前方3マス、横0で配置されます。
 
 - init の返却例（相対指定）
-  - { job: "engineer", name: "エンジニアA", initialPosition: { relativeTo: "allyCastle", forward: 3, lateral: 0 }, bonus: { atk: 1 }, memory: {} }
-
+  - {
+    job: "soldier",
+    name: "ソルくん",
+    initialPosition: {
+      relativeTo: "allyCastle",
+      x: 12,
+      y: 0
+    },
+    bonus: { atk: 2, def: 2, spd: 2, hit: 2, hp: 2 }, // 合計10
+  };
 ---
 
 ### 4.2 moveTo — 毎ターン「どこへ行くか」を返す関数
@@ -96,8 +94,8 @@
   | turn | number | 現在のターン番号（1,2,3...） |
   | enemies | Array | 敵ユニットの配列。各要素はユニットオブジェクト（id, position, hp, job, side, ...） |
   | allies | Array | 味方ユニットの配列 |
-  | enemyCastle | Object | 敵城の情報（通常は { position: {x,y}, hp: N } の形） |
-  | allyCastle | Object | 自軍城の情報（同上） |
+  | enemyCastle | Object | 敵城の位置情報（enemyCastle.xでx位置が取得可能） |
+  | allyCastle | Object | 自軍城の位置情報（同上） |
   | self | Object | 自分のユニット情報（position, hp, job, memory, skill 状態など） |
 
 - ユニットオブジェクト（例）
@@ -117,9 +115,7 @@
   | Object | { x: number, y: number } | ユニットが向かう「目標座標」を返す。エンジンが速度や壁を考慮して実際の移動を行う。 |
 
 - 城の位置の取得方法（例）
-  - 引数の enemyCastle.position を使うのが簡単で確実。
-  - 例: const castlePos = enemyCastle?.position; → castlePos.x / castlePos.y を参照。
-  - 引数がない場合は、init で渡された context.map を参照して map.castles を見る手もあるが、通常は引数の enemyCastle を使ってください。
+  - 引数の enemyCastle.xとenemyCastle.y を使うのが簡単で確実。
 
 - 敵の位置の取得方法（例）
   - enemies 配列を使う:
@@ -215,11 +211,10 @@ export function init(context) {
     // 初期位置は必ず自軍城基準の相対指定にする
     initialPosition: {
       relativeTo: "allyCastle", // 自軍城を基準に配置する指定（必須）
-      forward: 3,               // 自軍城から前方へ3マス
-      lateral: 0                // 横ずれ（右が正、左が負）
+      x: 3,               // 自軍城から前方へ3マス
+      y: 0                // 横ずれ（右が正、左が負）
     },
-    bonus: { atk: 0 },
-    memory: {}
+    bonus: { atk: 2, def: 2, spd: 2, hit: 2, hp: 2 },
   };
 }
 
@@ -231,8 +226,8 @@ export function moveTo(turn, enemies, allies, enemyCastle, allyCastle, self) {
     return { x: nearest.position.x, y: nearest.position.y };
   }
   // 敵がいなければ敵城へ向かう（enemyCastle があればそれを使う）
-  if (enemyCastle && enemyCastle.position) {
-    return { x: enemyCastle.position.x, y: enemyCastle.position.y };
+  else if (enemyCastle) {
+    return { x: enemyCastle.x, y: enemyCastle.y };
   }
   // それ以外はその場に留まる
   return { x: self.position.x, y: self.position.y };
@@ -243,7 +238,7 @@ export function attack(turn, inRangeEnemies, self) {
   if (!inRangeEnemies || inRangeEnemies.length === 0) return null;
 
   // HP が低い敵を狙う簡単なロジック
-  let target = inRangeEnemies.reduce((a, b) => (a.hp < b.hp ? a : b), inRangeEnemies[0]);
+  let target = getLowestHpEnemyInRange(self);
 
   // もしスキルが使えて体力が十分ならスキル
   if (!hasUsedSkill(self) && self.hp > 30) {

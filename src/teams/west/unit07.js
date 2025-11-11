@@ -9,7 +9,6 @@ export function init() {
       x: 1,
       y: 2
     },
-    memory: {},
     bonus: { atk: 0, def: 5, spd: 0, hit: 0, hp: 5 }, // 合計10
   };
 }
