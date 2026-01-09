@@ -32,9 +32,8 @@
 1. Githubから一式をZipでダウンロード、その後解凍する
 2. VS Codeで本リポジトリを開く。
 3. 拡張機能「Live Server」（Ritwick Dey）をインストール。
-4. `src/index.html` を右クリック→**Open with Live Server**。
-5. ブラウザで `http://127.0.0.1:5500/src/index.html` を開く。
-6. 画面で「戦闘開始」を押す。
+4. `src/index.html` を右クリック→**Open with Live Server**を選択（アプリが起動する）。
+5. 画面で「戦闘開始」を押す。
 
 ## プログラムのフォルダ構成
 ```text
